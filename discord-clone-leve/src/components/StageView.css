@@ -1,0 +1,284 @@
+/* ============================================
+   STAGE VIEW — Discord Clone Leve
+   Palco de transmissão (tela + webcams)
+   ============================================ */
+
+.stage-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #0e0e10;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* --- Header --- */
+.stage-view__header {
+  height: var(--header-height);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.stage-view__header-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-view__live-badge {
+  padding: 2px 8px;
+  background: var(--red);
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.stage-view__stream-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--header-primary);
+}
+
+.stage-view__header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.stage-view__btn {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stage-view__btn--stop {
+  background: var(--red);
+  color: white;
+}
+
+.stage-view__btn--stop:hover {
+  background: var(--red-hover);
+}
+
+.stage-view__btn--secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-normal);
+}
+
+.stage-view__btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.stage-view__btn-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* --- Camera Carousel --- */
+.stage-view__cameras {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.stage-view__camera-card {
+  width: 160px;
+  height: 90px;
+  border-radius: var(--radius-md);
+  background: #1a1a2e;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.stage-view__camera-card:hover {
+  border-color: var(--blurple);
+  transform: scale(1.02);
+}
+
+.stage-view__camera-card--active {
+  border-color: var(--green);
+}
+
+.stage-view__camera-card--speaking {
+  border-color: var(--green);
+  box-shadow: 0 0 8px rgba(59, 165, 93, 0.4);
+}
+
+.stage-view__speaking-indicator {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  font-size: 0.625rem;
+}
+
+.stage-view__video {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius-md);
+}
+
+.stage-view__camera-card video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.stage-view__camera-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stage-view__camera-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: white;
+}
+
+.stage-view__camera-name {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* --- Main Stream --- */
+.stage-view__main {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.stage-view__main video {
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: black;
+}
+
+.stage-view__stream-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--text-muted);
+}
+
+.stage-view__stream-placeholder-icon {
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.stage-view__stream-placeholder-text {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--header-secondary);
+}
+
+.stage-view__stream-placeholder-hint {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* --- Overlay Controls --- */
+.stage-view__overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.stage-view__main:hover .stage-view__overlay {
+  opacity: 1;
+}
+
+.stage-view__overlay-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.stage-view__overlay-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+}
+
+.stage-view__overlay-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* --- No Stream State --- */
+.stage-view__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.stage-view__empty-icon {
+  font-size: 4rem;
+  opacity: 0.15;
+}
+
+.stage-view__empty-text {
+  font-size: 1rem;
+  color: var(--text-muted);
+}

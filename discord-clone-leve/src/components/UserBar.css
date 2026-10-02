@@ -1,0 +1,123 @@
+/* ============================================
+   USER BAR — Discord Clone Leve
+   Barra inferior do usuário (sidebar esquerda)
+   ============================================ */
+
+.user-bar {
+  height: var(--user-bar-height);
+  background: #292b2f;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 4px;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+/* --- User Info --- */
+.user-bar__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.user-bar__info:hover {
+  background: var(--bg-modifier-hover);
+}
+
+.user-bar__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--blurple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.user-bar__avatar-status {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--status-online);
+  border: 2px solid #292b2f;
+}
+
+.user-bar__text {
+  min-width: 0;
+}
+
+.user-bar__name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--header-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.1;
+}
+
+.user-bar__tag {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  line-height: 1.1;
+}
+
+/* --- Action Buttons --- */
+.user-bar__actions {
+  display: flex;
+  gap: 2px;
+}
+
+.user-bar__btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--interactive-normal);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  position: relative;
+}
+
+.user-bar__btn:hover {
+  background: var(--bg-modifier-hover);
+  color: var(--interactive-hover);
+}
+
+.user-bar__btn--active {
+  color: var(--red);
+}
+
+.user-bar__btn--active:hover {
+  color: var(--red-hover);
+}
+
+/* Strikethrough line for muted state */
+.user-bar__btn--active svg .strikethrough {
+  opacity: 1;
+}
+
+.user-bar__btn svg .strikethrough {
+  opacity: 0;
+}
+
+.user-bar__btn svg {
+  width: 20px;
+  height: 20px;
+}

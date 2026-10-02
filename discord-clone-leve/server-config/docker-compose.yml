@@ -1,0 +1,38 @@
+# Docker Compose - LiveKit Server + Redis
+# Coloque este arquivo em /opt/livekit/docker-compose.yml no servidor
+#
+# Para iniciar: docker compose up -d
+# Para parar:   docker compose down
+# Para ver logs: docker compose logs -f livekit
+
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit-server
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml
+    command: --config /etc/livekit.yaml
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    container_name: livekit-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes
+
+volumes:
+  redis-data:
+    driver: local
