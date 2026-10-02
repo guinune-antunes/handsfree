@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório Técnico — Discord Clone Leve</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg: #0f0f13;
+      --bg-card: #1a1a24;
+      --bg-code: #12121a;
+      --text: #e4e4e8;
+      --text-muted: #8b8b9a;
+      --accent: #5865f2;
+      --accent2: #7c3aed;
+      --green: #3ba55d;
+      --red: #ed4245;
+      --yellow: #faa81a;
+      --border: rgba(255,255,255,0.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 14px;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .report-header {
+      text-align: center;
+      padding: 48px 0 40px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+    .report-header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .report-header .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    .report-header .date {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+
+    /* Sections */
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 48px 0 20px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2 .num {
+      background: var(--accent);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 28px 0 12px;
+    }
+
+    p { margin-bottom: 12px; color: var(--text); }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 0.85rem;
+    }
+    th {
+      background: var(--accent);
+      color: white;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    td strong { color: var(--accent); font-weight: 600; }
+
+    /* Code blocks */
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      margin: 12px 0 20px;
+      font-size: 0.8rem;
+    }
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+    p code, td code, li code {
+      background: rgba(88, 101, 242, 0.15);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #a8b1ff;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 16px 0;
+    }
+
+    /* Warning boxes */
+    .warning {
+      background: rgba(250, 168, 26, 0.08);
+      border-left: 4px solid var(--yellow);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 0.85rem;
+    }
+    .warning strong { color: var(--yellow); }
+
+    .info {
+      background: rgba(88, 101, 242, 0.08);
+      border-left: 4px solid var(--accent);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 0.85rem;
+    }
+
+    /* File tree */
+    .file-tree {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.8;
+      margin: 12px 0 20px;
+      white-space: pre;
+    }
+    .file-tree .highlight { color: var(--accent); font-weight: 600; }
+    .file-tree .comment { color: var(--text-muted); }
+
+    /* Mermaid */
+    .mermaid {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 16px 0 24px;
+      text-align: center;
+    }
+
+    /* Lists */
+    ul, ol { padding-left: 24px; margin: 8px 0 16px; }
+    li { margin: 4px 0; }
+
+    /* Divider */
+    hr {
+      border: none;
+      height: 1px;
+      background: var(--border);
+      margin: 40px 0;
+    }
+
+    /* Print */
+    @media print {
+      body { background: white; color: #1a1a1a; padding: 20px; font-size: 11px; }
+      .container { max-width: 100%; }
+      .report-header h1 { -webkit-text-fill-color: var(--accent); }
+      h2 { color: var(--accent); break-after: avoid; }
+      h3 { break-after: avoid; }
+      table { break-inside: avoid; }
+      .card, .mermaid, pre { break-inside: avoid; }
+      .warning, .info { break-inside: avoid; }
+      td { background: none !important; }
+      tr:nth-child(even) td { background: #f5f5f5 !important; }
+      .mermaid { background: #f8f8fc; }
+      pre { background: #f4f4f8; }
+      code { font-size: 0.75rem; }
+      p code, td code, li code { background: #e8e8f4; color: #4040a0; }
+    }
+
+    @page {
+      margin: 1.5cm;
+      size: A4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="report-header">
+      <h1>📋 Relatório Técnico</h1>
+      <div class="subtitle">Discord Clone Leve — Arquitetura, Tecnologias e Fluxos</div>
+      <div class="date">Gerado em: Outubro 2026 | Projeto: project xandão</div>
+    </div>
+
+    <!-- 1. VISÃO GERAL -->
+    <h2><span class="num">1</span> Visão Geral</h2>
+    <p>O <strong>Discord Clone Leve</strong> é uma aplicação de comunicação em tempo real que replica as funcionalidades essenciais do Discord: chat de texto, canais de voz com áudio em tempo real, e compartilhamento de tela. É composto por <strong>3 módulos independentes</strong> que trabalham juntos.</p>
+
+    <div class="mermaid">
+graph TB
+    subgraph CLIENT["🖥️ Client Side - PC do Usuário"]
+        TAURI["Tauri v2 - Shell Nativo"]
+        WEBVIEW["WebView2 - Motor de Renderização"]
+        REACT["React 19 - Interface"]
+        LK_SDK["LiveKit Client SDK - WebRTC"]
+        RUST["Rust Backend - Validação + Config"]
+    end
+    subgraph SERVER["🖧 Server Side - Debian Linux"]
+        LK_SERVER["LiveKit Server - Docker"]
+        REDIS["Redis 7 - Docker"]
+        TOKEN["Token Server - Node.js"]
+    end
+    REACT --> LK_SDK
+    REACT --> RUST
+    TAURI --> WEBVIEW
+    WEBVIEW --> REACT
+    LK_SDK -->|"WebSocket + WebRTC"| LK_SERVER
+    REACT -->|"HTTP POST"| TOKEN
+    LK_SERVER --> REDIS
+    </div>
+
+    <!-- 2. STACK -->
+    <h2><span class="num">2</span> Stack de Tecnologias</h2>
+
+    <h3>2.1 Client Side</h3>
+    <table>
+      <thead>
+        <tr><th>Tecnologia</th><th>Versão</th><th>Papel</th><th>Por quê?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Tauri</strong></td><td>v2</td><td>Framework de app desktop</td><td>Gera executáveis nativos (~5MB) usando o WebView do SO, muito mais leve que Electron (~150MB)</td></tr>
+        <tr><td><strong>React</strong></td><td>v19</td><td>Biblioteca de UI</td><td>Componentização, estado reativo, virtual DOM para performance</td></tr>
+        <tr><td><strong>TypeScript</strong></td><td>v6</td><td>Linguagem tipada</td><td>Segurança de tipos em tempo de desenvolvimento, autocompletion, refactoring seguro</td></tr>
+        <tr><td><strong>Vite</strong></td><td>v8</td><td>Build tool + dev server</td><td>HMR instantâneo, builds otimizados com Rollup, suporte nativo a TypeScript</td></tr>
+        <tr><td><strong>Rust</strong></td><td>2021 ed.</td><td>Backend nativo do Tauri</td><td>Validação de conexão TCP, persistência de config no disco, acesso ao filesystem</td></tr>
+        <tr><td><strong>livekit-client</strong></td><td>v2.22</td><td>SDK de WebRTC</td><td>Abstrai toda a complexidade do WebRTC (ICE, STUN, TURN, negociação SDP)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2.2 Server Side</h3>
+    <table>
+      <thead>
+        <tr><th>Tecnologia</th><th>Versão</th><th>Papel</th><th>Por quê?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>LiveKit Server</strong></td><td>latest</td><td>SFU de mídia em tempo real</td><td>Selective Forwarding Unit — roteia áudio/vídeo entre participantes sem mixar (baixa latência)</td></tr>
+        <tr><td><strong>Redis</strong></td><td>v7 Alpine</td><td>Store de estado/sessões</td><td>LiveKit usa Redis para coordenar rooms, participantes e estado entre instâncias</td></tr>
+        <tr><td><strong>Node.js</strong></td><td>v20</td><td>Token Server</td><td>Gera tokens JWT para autenticação no LiveKit. Zero dependências externas</td></tr>
+        <tr><td><strong>Docker</strong></td><td>—</td><td>Containerização</td><td>Isolamento, reprodutibilidade, fácil deploy e atualização</td></tr>
+        <tr><td><strong>Docker Compose</strong></td><td>—</td><td>Orquestração</td><td>Define e gerencia os containers (LiveKit + Redis) como um serviço único</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2.3 Protocolos</h3>
+    <table>
+      <thead>
+        <tr><th>Protocolo</th><th>Uso</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>WebSocket</strong> (<code>ws://</code>)</td><td>Sinalização LiveKit — troca de metadados, estado de sala, negociação de mídia</td></tr>
+        <tr><td><strong>WebRTC</strong> (UDP/TCP)</td><td>Transporte real de áudio/vídeo — conexão peer-to-peer otimizada pelo SFU</td></tr>
+        <tr><td><strong>STUN</strong></td><td>Descoberta do IP público do cliente para estabelecer conexão WebRTC</td></tr>
+        <tr><td><strong>TURN</strong></td><td>Relay de mídia quando conexão direta não é possível (firewall/NAT restritivo)</td></tr>
+        <tr><td><strong>HTTP</strong></td><td>Comunicação com o Token Server (<code>POST /api/token</code>)</td></tr>
+        <tr><td><strong>JWT</strong> (HS256)</td><td>Token de autenticação — contém identidade, permissões e sala autorizada</td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+
+    <!-- 3. ARQUIVOS -->
+    <h2><span class="num">3</span> Arquitetura de Arquivos</h2>
+
+    <h3>3.1 Frontend (<code>src/</code>)</h3>
+    <div class="file-tree">src/
+├── <span class="highlight">App.tsx</span>                    <span class="comment"># Componente raiz — routing, estado global, integração LiveKit</span>
+├── App.css                    <span class="comment"># Design system global (variáveis CSS, reset, tokens)</span>
+├── main.tsx                   <span class="comment"># Entry point React (ReactDOM.createRoot)</span>
+├── types.ts                   <span class="comment"># Interfaces TypeScript (Channel, Member, Message...)</span>
+│
+├── config/
+│   └── <span class="highlight">livekit.ts</span>             <span class="comment"># Utilitários: URL builder, fetch de token JWT</span>
+│
+├── hooks/
+│   ├── <span class="highlight">useLiveKit.ts</span>          <span class="comment"># ⭐ Hook principal — Room, tracks, áudio, vídeo, screen share</span>
+│   ├── useMediaDevices.ts     <span class="comment"># Enumeração de dispositivos de áudio/vídeo</span>
+│   └── useVirtualScroll.ts    <span class="comment"># Scroll virtual para listas longas</span>
+│
+├── components/
+│   ├── LoginScreen.tsx/.css   <span class="comment"># Tela de login (host, porta, nickname)</span>
+│   ├── Dashboard.tsx/.css     <span class="comment"># Layout principal (sidebar + center + members)</span>
+│   ├── ChannelSidebar.tsx/.css<span class="comment"># Lista de canais (texto + voz)</span>
+│   ├── ChatPanel.tsx/.css     <span class="comment"># Painel de chat com mensagens</span>
+│   ├── StageView.tsx/.css     <span class="comment"># Palco de transmissão (screen share + webcams)</span>
+│   ├── MembersList.tsx/.css   <span class="comment"># Lista de membros do servidor</span>
+│   ├── UserBar.tsx/.css       <span class="comment"># Barra do usuário (mute, deafen, settings)</span>
+│   └── SettingsModal.tsx/.css <span class="comment"># Modal de configurações de áudio/vídeo</span>
+│
+└── data/
+    └── mockData.ts            <span class="comment"># Dados iniciais de exemplo</span></div>
+
+    <h3>3.2 Backend Tauri (<code>src-tauri/</code>)</h3>
+    <div class="file-tree">src-tauri/
+├── tauri.conf.json            <span class="comment"># Config do Tauri (janela, porta, CSP, bundle)</span>
+├── Cargo.toml                 <span class="comment"># Dependências Rust (tauri, serde, tokio, dirs)</span>
+└── src/
+    ├── main.rs                <span class="comment"># Entry point Rust</span>
+    └── <span class="highlight">lib.rs</span>                 <span class="comment"># ⭐ Comandos: validate_connection, save_config, load_config</span></div>
+
+    <h3>3.3 Servidor (<code>server-config/</code>)</h3>
+    <div class="file-tree">server-config/
+├── docker-compose.yml         <span class="comment"># Orquestração: LiveKit (host network) + Redis (bridge)</span>
+├── livekit.yaml               <span class="comment"># Config do LiveKit Server (portas, RTC, Redis, TURN, API keys)</span>
+└── <span class="highlight">token-server.js</span>            <span class="comment"># ⭐ Servidor HTTP que gera tokens JWT</span></div>
+
+    <hr>
+
+    <!-- 4. FLUXOS -->
+    <h2><span class="num">4</span> Fluxos Detalhados</h2>
+
+    <h3>4.1 Login e Validação de Conexão</h3>
+    <div class="mermaid">
+sequenceDiagram
+    participant U as Usuário
+    participant R as React - LoginScreen
+    participant T as Tauri - Rust
+    participant FS as Filesystem
+    participant S as LiveKit Server
+
+    U->>R: Preenche Host, Porta, Nickname
+    U->>R: Clica Conectar
+    R->>T: invoke validate_connection host port
+    T->>S: TcpStream connect_timeout 5s
+    alt Conexão OK
+        S-->>T: TCP handshake ✅
+        T-->>R: Ok Conectado
+        R->>T: invoke save_config
+        T->>FS: Salva config.json em AppData
+        R->>R: setScreen dashboard
+    else Falha
+        S--xT: Timeout / Recusado
+        T-->>R: Err mensagem
+        R->>U: Exibe erro
+    end
+    </div>
+
+    <div class="card">
+      <strong>Detalhes técnicos:</strong>
+      <ul>
+        <li>O Rust usa <code>TcpStream::connect_timeout</code> com 5 segundos de timeout</li>
+        <li>A config é salva em <code>%APPDATA%/discord-clone-leve/config.json</code></li>
+        <li>Na próxima abertura, <code>load_config</code> carrega automaticamente os valores salvos</li>
+      </ul>
+    </div>
+
+    <h3>4.2 Conexão a Canal de Voz</h3>
+    <div class="mermaid">
+sequenceDiagram
+    participant U as Usuário
+    participant R as React App
+    participant TS as Token Server 3001
+    participant LK as LiveKit Server 7880
+
+    U->>R: Clica em Sala 1 canal de voz
+    R->>TS: POST /api/token room identity
+    Note over TS: Gera JWT com HS256 Claims iss sub video grants
+    TS-->>R: token eyJhbG...
+    R->>LK: WebSocket connect ws host 7880 token
+    Note over LK: Valida JWT signature Verifica API Key grants
+    alt Token válido
+        LK-->>R: Connected ✅
+        R->>LK: setMicrophoneEnabled true
+        Note over R: getUserMedia audio Captura microfone
+        R->>LK: Publica audio track
+        LK-->>R: Recebe tracks remotos
+        R->>U: Atualiza UI conectado
+    else Token inválido
+        LK--xR: 401 Unauthorized
+        R->>U: Exibe erro
+    end
+    </div>
+
+    <div class="card">
+      <strong>Estrutura do Token JWT:</strong>
+      <pre><code>Header:  { "alg": "HS256", "typ": "JWT" }
+Payload: {
+  "iss": "&lt;API_KEY&gt;",              ← Identifica o emissor
+  "sub": "Guilherme",              ← Identidade do participante
+  "iat": 1696000000,               ← Emitido em (timestamp)
+  "exp": 1696086400,               ← Expira em (24h depois)
+  "jti": "uuid-aleatorio",         ← ID único do token
+  "video": {
+    "roomJoin": true,               ← Pode entrar na sala
+    "room": "voice-ch-voice-1",     ← Sala autorizada
+    "canPublish": true,             ← Pode enviar áudio/vídeo
+    "canSubscribe": true,           ← Pode receber áudio/vídeo
+    "canPublishData": true          ← Pode enviar dados
+  },
+  "name": "Guilherme"
+}
+Signature: HMAC-SHA256(header.payload, API_SECRET)</code></pre>
+    </div>
+
+    <h3>4.3 Áudio em Tempo Real</h3>
+    <div class="mermaid">
+sequenceDiagram
+    participant A as Participante A - Microfone
+    participant SDK_A as LiveKit SDK A
+    participant SFU as LiveKit SFU - Servidor
+    participant SDK_B as LiveKit SDK B
+    participant B as Participante B - Alto-falante
+
+    A->>SDK_A: getUserMedia audio
+    SDK_A->>SFU: Publica Audio Track WebRTC
+    Note over SFU: SFU recebe o stream e encaminha para todos os subscribers
+    SFU->>SDK_B: Encaminha Audio Track
+    SDK_B->>B: new Audio srcObject stream autoplay true
+    Note over A,B: Fluxo contínuo de pacotes RTP Codec Opus 48kHz 32-64 kbps
+    </div>
+
+    <div class="card">
+      <strong>Como o áudio funciona no código:</strong>
+      <ol>
+        <li><strong>Captura:</strong> <code>setMicrophoneEnabled(true)</code> → chama <code>getUserMedia</code></li>
+        <li><strong>Envio:</strong> O SDK empacota o áudio em RTP e envia via WebRTC ao SFU</li>
+        <li><strong>Recepção:</strong> Evento <code>TrackSubscribed</code> → cria <code>&lt;audio&gt;</code> element programático</li>
+        <li><strong>Mute:</strong> <code>setMicrophoneEnabled(false)</code> → para de enviar pacotes</li>
+        <li><strong>Deafen:</strong> <code>audioEl.muted = true</code> em todos os elements remotos</li>
+      </ol>
+    </div>
+
+    <h3>4.4 Screen Share</h3>
+    <div class="mermaid">
+sequenceDiagram
+    participant U as Streamer
+    participant SDK_S as LiveKit SDK
+    participant SFU as LiveKit SFU
+    participant SDK_V as Viewer SDK
+    participant V as Viewer
+
+    U->>SDK_S: startScreenShare
+    SDK_S->>U: getDisplayMedia video audio
+    U-->>SDK_S: Seleciona tela/janela
+    SDK_S->>SFU: Publica ScreenShare Track
+    SFU->>SDK_V: TrackSubscribed source ScreenShare
+    SDK_V->>V: screenVideoRef.srcObject = stream
+    V->>V: video renderiza a tela compartilhada
+    Note over U,V: Codec VP8/VP9/H.264 Resolução adaptativa até 1080p 30fps
+    </div>
+
+    <h3>4.5 Rede e Portas</h3>
+    <div class="mermaid">
+graph LR
+    subgraph LAN["Rede Local 192.168.1.x"]
+        PC["PC Usuário"]
+        SERVER["Servidor Debian 192.168.1.7"]
+    end
+    subgraph ROUTER["Roteador"]
+        NAT["NAT / Port Forward"]
+    end
+    INTERNET["Internet IP 187.7.186.10"]
+    PC -->|"TCP 7880 WebSocket"| SERVER
+    PC -->|"TCP 3001 Token HTTP"| SERVER
+    PC -->|"UDP 50000-60000 Media"| SERVER
+    INTERNET --> NAT
+    NAT -->|"7880 7881 3001 3478 50000-60000"| SERVER
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Porta</th><th>Protocolo</th><th>Serviço</th><th>Descrição</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>7880</strong></td><td>TCP</td><td>LiveKit API/WS</td><td>Sinalização WebSocket + API REST</td></tr>
+        <tr><td><strong>7881</strong></td><td>TCP</td><td>LiveKit RTC</td><td>Conexão WebRTC via TCP (fallback)</td></tr>
+        <tr><td><strong>3001</strong></td><td>TCP</td><td>Token Server</td><td>Geração de tokens JWT</td></tr>
+        <tr><td><strong>3478</strong></td><td>UDP</td><td>TURN</td><td>Relay de mídia (NAT traversal)</td></tr>
+        <tr><td><strong>50000-60000</strong></td><td>UDP</td><td>Media Range</td><td>Streams de áudio/vídeo WebRTC</td></tr>
+        <tr><td><strong>6379</strong></td><td>TCP (interno)</td><td>Redis</td><td>Comunicação LiveKit ↔ Redis (127.0.0.1)</td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+
+    <!-- 5. COMPONENTES -->
+    <h2><span class="num">5</span> Componentes React</h2>
+    <div class="mermaid">
+graph TD
+    APP["App.tsx - Estado global + routing"]
+    APP --> LOGIN["LoginScreen - Host Porta Nickname"]
+    APP --> DASH["Dashboard - Layout grid 3 colunas"]
+    APP --> SETTINGS["SettingsModal - Dispositivos de mídia"]
+    DASH --> SIDEBAR["ChannelSidebar - Canais texto/voz"]
+    DASH --> CENTER["Centro"]
+    DASH --> MEMBERS["MembersList - Online/Offline"]
+    CENTER --> CHAT["ChatPanel - Mensagens + Input"]
+    CENTER --> STAGE["StageView - Screen share + Webcams"]
+    DASH --> USERBAR["UserBar - Mute Deafen Settings"]
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Componente</th><th>Linhas</th><th>Responsabilidade</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>App</strong></td><td>182</td><td>Estado global, routing login/dashboard, integração LiveKit via <code>useLiveKit</code></td></tr>
+        <tr><td><strong>LoginScreen</strong></td><td>188</td><td>Formulário de conexão, validação TCP via Rust, persistência de config</td></tr>
+        <tr><td><strong>Dashboard</strong></td><td>106</td><td>Layout grid (sidebar + centro + members), passa props</td></tr>
+        <tr><td><strong>ChannelSidebar</strong></td><td>141</td><td>Lista canais, mostra membros em voz, banner "Conectado"</td></tr>
+        <tr><td><strong>ChatPanel</strong></td><td>~150</td><td>Histórico de mensagens, input de texto, scroll automático</td></tr>
+        <tr><td><strong>StageView</strong></td><td>146</td><td><code>&lt;video&gt;</code> real do screen share, webcams, speaking indicator</td></tr>
+        <tr><td><strong>MembersList</strong></td><td>~90</td><td>Lista membros agrupados por status</td></tr>
+        <tr><td><strong>UserBar</strong></td><td>80</td><td>Avatar, nickname, botões mute/deafen/settings</td></tr>
+        <tr><td><strong>SettingsModal</strong></td><td>~354</td><td>Enumeração de dispositivos, seleção mic/speaker/camera, preview</td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+
+    <!-- 6. useLiveKit -->
+    <h2><span class="num">6</span> Hook useLiveKit — Núcleo da Comunicação</h2>
+    <p>O hook <code>useLiveKit.ts</code> (357 linhas) é o coração da comunicação em tempo real:</p>
+
+    <div class="mermaid">
+stateDiagram-v2
+    [*] --> Desconectado
+    Desconectado --> Conectando: connectToRoom url token
+    Conectando --> Conectado: ConnectionState.Connected
+    Conectando --> Desconectado: Erro
+    Conectado --> Desconectado: disconnect
+    state Conectado {
+        [*] --> Ouvindo
+        Ouvindo --> Mutado: toggleMute
+        Mutado --> Ouvindo: toggleMute
+        Ouvindo --> Transmitindo: startScreenShare
+        Transmitindo --> Ouvindo: stopScreenShare
+    }
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Evento LiveKit</th><th>Ação no Código</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ConnectionStateChanged</code></td><td>Atualiza <code>voiceState</code> (connected/disconnected)</td></tr>
+        <tr><td><code>ParticipantConnected</code></td><td>Atualiza lista de participantes</td></tr>
+        <tr><td><code>ParticipantDisconnected</code></td><td>Remove audio element, atualiza lista</td></tr>
+        <tr><td><code>TrackSubscribed</code></td><td>Cria <code>&lt;audio&gt;</code> para mic remoto ou attach screen share</td></tr>
+        <tr><td><code>TrackUnsubscribed</code></td><td>Remove audio/video elements</td></tr>
+        <tr><td><code>TrackMuted / Unmuted</code></td><td>Atualiza estado de mute na lista</td></tr>
+        <tr><td><code>ActiveSpeakersChanged</code></td><td>Atualiza indicador de "falando"</td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+
+    <!-- 7. DOCKER -->
+    <h2><span class="num">7</span> Infraestrutura Docker</h2>
+    <div class="mermaid">
+graph TB
+    subgraph DOCKER["Docker Engine"]
+        subgraph HOST_NET["network_mode host"]
+            LK["livekit-server Portas 7880 7881 3478 UDP 50000-60000"]
+        end
+        subgraph BRIDGE["Bridge Network"]
+            REDIS_C["redis 7-alpine Port 6379 Volume redis-data"]
+        end
+    end
+    LK -->|"127.0.0.1:6379"| REDIS_C
+    </div>
+
+    <div class="card">
+      <strong>Por que <code>network_mode: host</code> para o LiveKit?</strong>
+      <ul>
+        <li>O LiveKit precisa de acesso direto às interfaces de rede para WebRTC</li>
+        <li>UDP media streams precisam de portas dinâmicas (50000-60000)</li>
+        <li>Evita overhead de NAT do Docker bridge</li>
+        <li>Redis fica em bridge com port mapping porque só precisa de uma porta TCP</li>
+      </ul>
+    </div>
+
+    <hr>
+
+    <!-- 8. SEGURANÇA -->
+    <h2><span class="num">8</span> Segurança</h2>
+    <table>
+      <thead>
+        <tr><th>Camada</th><th>Mecanismo</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Autenticação</strong></td><td>JWT com HMAC-SHA256</td><td>✅ Implementado</td></tr>
+        <tr><td><strong>Autorização</strong></td><td>Video grants por sala</td><td>✅ Implementado</td></tr>
+        <tr><td><strong>Transporte</strong></td><td>ws:// (sem SSL)</td><td>⚠️ Apenas para dev</td></tr>
+        <tr><td><strong>API Keys</strong></td><td>Chaves aleatórias de 16/32 bytes</td><td>✅ Implementado</td></tr>
+        <tr><td><strong>CORS</strong></td><td>Token server aceita qualquer origem</td><td>⚠️ Restringir em produção</td></tr>
+        <tr><td><strong>Token TTL</strong></td><td>24 horas de validade</td><td>✅ Implementado</td></tr>
+      </tbody>
+    </table>
+
+    <div class="warning">
+      <strong>⚠️ Para produção:</strong>
+      <ul>
+        <li>Domínio com SSL (<code>wss://</code> em vez de <code>ws://</code>)</li>
+        <li>Restringir CORS no token server</li>
+        <li>Proteger o endpoint <code>/api/token</code> com autenticação</li>
+        <li>Usar variáveis de ambiente para as chaves (nunca hardcoded)</li>
+      </ul>
+    </div>
+
+    <hr>
+
+    <!-- 9. FLUXO END-TO-END -->
+    <h2><span class="num">9</span> Fluxo End-to-End</h2>
+    <div class="mermaid">
+flowchart LR
+    subgraph USUARIO["👤 Usuário"]
+        MIC["🎤 Microfone"]
+        SPK["🔊 Alto-falante"]
+        SCREEN["🖥️ Tela"]
+    end
+    subgraph APP["📱 App Tauri"]
+        REACT_APP["React"]
+        LK_HOOK["useLiveKit"]
+        WEBRTC["WebRTC Engine"]
+    end
+    subgraph NET["🌐 Rede"]
+        WS["WebSocket Sinalização"]
+        RTP_NET["RTP/SRTP Mídia"]
+    end
+    subgraph SRV["🖧 Servidor"]
+        LK_SRV["LiveKit SFU"]
+        REDIS_SRV["Redis"]
+    end
+    MIC -->|"getUserMedia"| REACT_APP
+    REACT_APP --> LK_HOOK
+    LK_HOOK --> WEBRTC
+    WEBRTC --> WS
+    WEBRTC --> RTP_NET
+    WS --> LK_SRV
+    RTP_NET --> LK_SRV
+    LK_SRV --> REDIS_SRV
+    LK_SRV -->|"RTP"| RTP_NET
+    RTP_NET --> WEBRTC
+    WEBRTC --> LK_HOOK
+    LK_HOOK --> REACT_APP
+    REACT_APP --> SPK
+    REACT_APP -->|"getDisplayMedia"| SCREEN
+    </div>
+
+    <hr>
+
+    <!-- 10. RESUMO -->
+    <h2><span class="num">10</span> Resumo por Módulo</h2>
+
+    <h3>🖥️ Frontend (Client)</h3>
+    <table>
+      <thead><tr><th>Tech</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Tauri v2</strong></td><td>Shell desktop nativo (WebView2 no Windows)</td></tr>
+        <tr><td><strong>React 19</strong></td><td>Componentes, estado, renderização</td></tr>
+        <tr><td><strong>TypeScript 6</strong></td><td>Tipagem estática, segurança</td></tr>
+        <tr><td><strong>Vite 8</strong></td><td>Dev server com HMR, bundling</td></tr>
+        <tr><td><strong>livekit-client 2.22</strong></td><td>SDK WebRTC (Room, Track, Participant)</td></tr>
+        <tr><td><strong>CSS puro</strong></td><td>Estilização (variáveis CSS, BEM, glassmorphism)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>⚙️ Backend Nativo (Rust)</h3>
+    <table>
+      <thead><tr><th>Tech</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Rust</strong></td><td>Linguagem do backend Tauri</td></tr>
+        <tr><td><strong>Tauri Commands</strong></td><td>Bridge JS ↔ Rust (invoke)</td></tr>
+        <tr><td><strong>Tokio</strong></td><td>Runtime async para TCP</td></tr>
+        <tr><td><strong>Serde</strong></td><td>Serialização JSON</td></tr>
+        <tr><td><strong>dirs</strong></td><td>Caminho de AppData multiplataforma</td></tr>
+      </tbody>
+    </table>
+
+    <h3>🖧 Servidor (Debian)</h3>
+    <table>
+      <thead><tr><th>Tech</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td><strong>LiveKit Server</strong></td><td>SFU — roteia áudio/vídeo WebRTC</td></tr>
+        <tr><td><strong>Redis 7</strong></td><td>Estado de rooms e participantes</td></tr>
+        <tr><td><strong>Node.js 20</strong></td><td>Token server (JWT HS256)</td></tr>
+        <tr><td><strong>Docker</strong></td><td>Containerização</td></tr>
+        <tr><td><strong>Docker Compose</strong></td><td>Orquestração de serviços</td></tr>
+        <tr><td><strong>UFW</strong></td><td>Firewall (portas TCP/UDP)</td></tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#5865f2',
+        primaryTextColor: '#e4e4e8',
+        primaryBorderColor: '#5865f2',
+        lineColor: '#5865f2',
+        secondaryColor: '#1a1a24',
+        tertiaryColor: '#0f0f13',
+        background: '#1a1a24',
+        mainBkg: '#1a1a24',
+        nodeBorder: '#5865f2',
+        clusterBkg: '#12121a',
+        clusterBorder: 'rgba(255,255,255,0.1)',
+        titleColor: '#e4e4e8',
+        edgeLabelBackground: '#1a1a24',
+      },
+      securityLevel: 'loose',
+    });
+  </script>
+</body>
+</html>
