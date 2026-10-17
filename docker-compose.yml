@@ -8,7 +8,6 @@
 services:
   livekit:
     image: livekit/livekit-server:latest
-    container_name: livekit-server
     restart: unless-stopped
     network_mode: host
     volumes:
@@ -20,7 +19,6 @@ services:
 
   token-server:
     image: node:20-alpine
-    container_name: livekit-token-server
     restart: unless-stopped
     working_dir: /app
     volumes:
@@ -37,7 +35,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: livekit-redis
     restart: unless-stopped
     ports:
       - "6379:6379"

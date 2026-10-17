@@ -2,6 +2,9 @@
 node_modules/
 dist/
 target/
+src-tauri/
 .env
 discord-clone-leve/
 *.log
+DIAGNOSTICO_DISCORD_CLONE.txt
+

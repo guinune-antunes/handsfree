@@ -81,9 +81,23 @@ EOF
 echo -e "${GREEN}livekit.yaml atualizado com sucesso!${NC}"
 
 # 5. Iniciar containers
-echo -e "\n${YELLOW}[4/4] Iniciando containers via Docker Compose...${NC}"
+echo -e "\n${YELLOW}[4/4] Limpando eventuais conflitos e iniciando serviços...${NC}"
+
+# Parar serviços do compose atual se estiverem rodando
 docker compose down 2>/dev/null || true
-docker compose up -d
+
+# Forçar remoção de containers antigos/conflitantes que possam estar presos no daemon
+echo -e "Liberando portas e removendo containers residuais..."
+docker rm -f livekit-redis livekit-server livekit-token-server 2>/dev/null || true
+
+# Subir com recriação forçada
+echo -e "Subindo LiveKit, Redis e Token Server via Docker Compose..."
+docker compose up -d --remove-orphans --force-recreate
+
+# Aguardar 3 segundos e inspecionar status
+sleep 3
+echo -e "\n${YELLOW}Status dos containers em execução:${NC}"
+docker compose ps
 
 echo -e "\n${GREEN}=====================================================${NC}"
 echo -e "${GREEN}    ✅ Servidor configurado e em execução!           ${NC}"
