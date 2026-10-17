@@ -9,7 +9,16 @@ echo.
 
 cd /d "%~dp0"
 
-echo [1/3] Verificando dependencias do Node.js...
+if exist "Instalador-Discord-Clone.exe" (
+    echo Iniciando o Instalador Visual do Discord Clone Leve...
+    start "" "%~dp0Instalador-Discord-Clone.exe"
+    exit /b 0
+)
+
+echo ========================================================
+echo    Instalador do Cliente - Discord Clone Leve
+echo ========================================================
+echo.
 if not exist "node_modules\" (
     echo Instalando pacotes npm...
     call npm install
