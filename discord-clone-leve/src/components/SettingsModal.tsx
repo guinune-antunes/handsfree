@@ -153,24 +153,9 @@ export default function SettingsModal({ isOpen, onClose, onStartStream }: Settin
   }, [isOpen, onClose]);
 
   // Share Screen
-  const handleShareScreen = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { frameRate: 60 },
-        audio: true,
-      });
-      // For now, just log it - real implementation would send to LiveKit
-      console.log('Screen stream obtained:', stream.getTracks());
-      onStartStream();
-      // Stop after modal closes
-      stream.getTracks().forEach((t) => {
-        t.addEventListener('ended', () => {
-          console.log('Screen share ended');
-        });
-      });
-    } catch {
-      // User cancelled or error
-    }
+  const handleShareScreen = () => {
+    onStartStream();
+    onClose();
   };
 
   if (!isOpen) return null;

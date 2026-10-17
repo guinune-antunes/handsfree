@@ -17,12 +17,13 @@ export function getLiveKitUrl(host: string, port: number): string {
 
 /**
  * Token server URL — this is the endpoint that generates JWT tokens
- * for LiveKit authentication. Should point to your token server.
+ * for LiveKit authentication. Default port is 3001.
  */
-export function getTokenServerUrl(host: string): string {
-  // The token server runs on port 7881 on the same host as LiveKit
-  // In production, this could be a separate endpoint
-  return `http://${host}:7880`;
+export function getTokenServerUrl(host: string, port = 3001): string {
+  if (host.startsWith('http://') || host.startsWith('https://')) {
+    return host;
+  }
+  return `http://${host}:${port}`;
 }
 
 /**

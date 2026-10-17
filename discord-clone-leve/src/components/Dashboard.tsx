@@ -48,7 +48,7 @@ export default function Dashboard({
   onToggleMute,
   onToggleDeafen,
   onOpenSettings,
-  onStartStream: _onStartStream,
+  onStartStream,
   onStopStream,
   liveKitParticipants,
   screenVideoRef,
@@ -65,6 +65,7 @@ export default function Dashboard({
           members={members}
           currentChannelId={currentChannelId}
           voiceState={voiceState}
+          nickname={nickname}
           onChannelSelect={onChannelSelect}
           onVoiceConnect={onVoiceConnect}
           onVoiceDisconnect={onVoiceDisconnect}
@@ -73,9 +74,13 @@ export default function Dashboard({
           nickname={nickname}
           isMuted={isMuted}
           isDeafened={isDeafened}
+          isVoiceConnected={voiceState.isConnected}
+          isStreaming={streamState.isActive}
           onToggleMute={onToggleMute}
           onToggleDeafen={onToggleDeafen}
           onOpenSettings={onOpenSettings}
+          onStartStream={onStartStream}
+          onStopStream={onStopStream}
         />
       </div>
 

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import type { AppConfig, Screen, Channel, Member, Message } from './types';
 import { MOCK_MEMBERS, MOCK_CHANNELS, MOCK_MESSAGES } from './data/mockData';
-import { getLiveKitUrl, fetchLiveKitToken } from './config/livekit';
+import { getLiveKitUrl, fetchLiveKitToken, getTokenServerUrl } from './config/livekit';
 import { useLiveKit } from './hooks/useLiveKit';
 import LoginScreen from './components/LoginScreen';
 import Dashboard from './components/Dashboard';
@@ -25,11 +25,6 @@ function App() {
   // --- Settings modal ---
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // --- Token server URL (runs on port 3001 of the same host) ---
-  const getTokenUrl = useCallback(() => {
-    return `http://${config.host}:3001`;
-  }, [config.host]);
-
   // --- Handlers ---
   const handleConnect = useCallback((newConfig: AppConfig) => {
     setConfig(newConfig);
@@ -43,7 +38,7 @@ function App() {
   const handleVoiceConnect = useCallback(async (channelId: string) => {
     try {
       // Fetch a token from the token server
-      const tokenUrl = getTokenUrl();
+      const tokenUrl = getTokenServerUrl(config.host);
       const roomName = `voice-${channelId}`;
       console.log(`[App] Fetching token from ${tokenUrl} for room ${roomName}...`);
 
@@ -95,7 +90,7 @@ function App() {
       console.error('[App] Unexpected error in voice connect:', error);
       alert('Erro inesperado ao conectar ao canal de voz. Verifique o console.');
     }
-  }, [config, getTokenUrl, liveKit]);
+  }, [config, liveKit]);
 
   const handleVoiceDisconnect = useCallback(() => {
     liveKit.disconnect();

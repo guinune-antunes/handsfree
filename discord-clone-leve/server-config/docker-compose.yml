@@ -18,6 +18,23 @@ services:
       redis:
         condition: service_healthy
 
+  token-server:
+    image: node:20-alpine
+    container_name: livekit-token-server
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./token-server.js:/app/token-server.js:ro
+    command: node token-server.js
+    ports:
+      - "3001:3001"
+    environment:
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY:-COLOQUE_SUA_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET:-COLOQUE_SEU_API_SECRET}
+      - PORT=3001
+    depends_on:
+      - livekit
+
   redis:
     image: redis:7-alpine
     container_name: livekit-redis

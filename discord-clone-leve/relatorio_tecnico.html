@@ -616,6 +616,7 @@ graph TB
         end
         subgraph BRIDGE["Bridge Network"]
             REDIS_C["redis 7-alpine Port 6379 Volume redis-data"]
+            TOKEN_C["token-server node:20-alpine Port 3001"]
         end
     end
     LK -->|"127.0.0.1:6379"| REDIS_C

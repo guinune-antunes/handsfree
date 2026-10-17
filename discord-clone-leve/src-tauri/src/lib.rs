@@ -28,15 +28,21 @@ fn config_path() -> PathBuf {
 /// Retorna Ok(()) se conectou, Err(mensagem) caso contrário
 #[tauri::command]
 async fn validate_connection(host: String, port: u16) -> Result<String, String> {
-    let addr = format!("{}:{}", host, port);
-
-    // Tentar conectar com timeout de 5 segundos
+    let host_for_task = host.clone();
     let result = tokio::task::spawn_blocking(move || {
-        TcpStream::connect_timeout(
-            &addr.parse().map_err(|e| format!("Endereço inválido: {}", e))?,
-            Duration::from_secs(5),
-        )
-        .map_err(|e| format!("Não foi possível conectar a {}:{} — {}", host, port, e))
+        use std::net::ToSocketAddrs;
+        let addrs: Vec<_> = (host_for_task.as_str(), port)
+            .to_socket_addrs()
+            .map_err(|e| format!("Endereço ou hostname inválido: {}", e))?
+            .collect();
+
+        if addrs.is_empty() {
+            return Err("Nenhum endereço IP encontrado para o host informado.".to_string());
+        }
+
+        // Tentar conectar ao primeiro endereço resolvido com timeout de 5 segundos
+        TcpStream::connect_timeout(&addrs[0], Duration::from_secs(5))
+            .map_err(|e| format!("Não foi possível conectar a {}:{} — {}", host_for_task, port, e))
     })
     .await
     .map_err(|e| format!("Erro interno: {}", e))?;

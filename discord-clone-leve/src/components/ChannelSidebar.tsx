@@ -7,6 +7,7 @@ interface ChannelSidebarProps {
   members: Member[];
   currentChannelId: string;
   voiceState: VoiceState;
+  nickname?: string;
   onChannelSelect: (channelId: string) => void;
   onVoiceConnect: (channelId: string) => void;
   onVoiceDisconnect: () => void;
@@ -17,6 +18,7 @@ export default function ChannelSidebar({
   members: _members,
   currentChannelId,
   voiceState,
+  nickname,
   onChannelSelect,
   onVoiceConnect,
   onVoiceDisconnect,
@@ -94,15 +96,23 @@ export default function ChannelSidebar({
               {channel.connectedMembers.length > 0 && (
                 <div className="voice-users">
                   {channel.connectedMembers.map((memberId) => {
-                    const member = getMemberById(memberId);
-                    if (!member) return null;
+                    const isSelf = memberId === 'self';
+                    const mockMember = getMemberById(memberId);
+                    if (!isSelf && !mockMember) return null;
+
+                    const memberName = isSelf ? (nickname || 'Você') : mockMember!.name;
+                    const isMuted = isSelf ? voiceState.isMuted : mockMember!.isMuted;
+
                     return (
                       <div key={memberId} className="voice-user">
                         <div className="voice-user__avatar">
-                          {getInitials(member.name)}
+                          {getInitials(memberName)}
                         </div>
-                        <span className="voice-user__name">{member.name}</span>
-                        {member.isMuted && (
+                        <span className="voice-user__name">
+                          {memberName}
+                          {isSelf && <span style={{ opacity: 0.6, fontSize: '0.75rem', marginLeft: '4px' }}>(Você)</span>}
+                        </span>
+                        {isMuted && (
                           <svg className="voice-user__mute-icon" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
                             <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" strokeWidth="2" />
