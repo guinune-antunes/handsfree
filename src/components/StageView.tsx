@@ -1,33 +1,77 @@
-import type { RefObject } from 'react';
-import type { Member, StreamState } from '../types';
+import { useEffect, type RefObject } from 'react';
+import type { StreamState, VoiceState } from '../types';
 import type { LiveKitParticipant } from '../hooks/useLiveKit';
-import { getInitials, getMemberById } from '../data/mockData';
+import { getInitials } from '../data/mockData';
 import './StageView.css';
 
 interface StageViewProps {
-  members: Member[];
+  channelName?: string;
+  voiceState: VoiceState;
   streamState: StreamState;
-  onStopStream: () => void;
+  activeScreenTrack?: MediaStreamTrack | null;
   liveKitParticipants?: LiveKitParticipant[];
   screenVideoRef?: RefObject<HTMLVideoElement | null>;
+  nickname: string;
+  isMuted: boolean;
+  isDeafened: boolean;
+  onToggleMute: () => void;
+  onToggleDeafen: () => void;
+  onStartStream: () => void;
+  onStopStream: () => void;
+  onVoiceDisconnect: () => void;
 }
 
 export default function StageView({
-  members,
+  channelName = 'Canal de Voz',
+  voiceState,
   streamState,
-  onStopStream,
+  activeScreenTrack,
   liveKitParticipants = [],
   screenVideoRef,
+  nickname,
+  isMuted,
+  isDeafened,
+  onToggleMute,
+  onToggleDeafen,
+  onStartStream,
+  onStopStream,
+  onVoiceDisconnect,
 }: StageViewProps) {
-  const streamer = streamState.streamerId ? getMemberById(streamState.streamerId) : null;
-  const streamerName = streamer?.name
-    || liveKitParticipants.find((p) => p.identity === streamState.streamerId)?.name
-    || streamState.streamerId;
+  // Efeito para vincular a track de vídeo da tela assim que o elemento estiver no DOM
+  useEffect(() => {
+    if (screenVideoRef?.current) {
+      if (activeScreenTrack) {
+        screenVideoRef.current.srcObject = new MediaStream([activeScreenTrack]);
+        screenVideoRef.current.play().catch(() => {});
+      } else {
+        screenVideoRef.current.srcObject = null;
+      }
+    }
+  }, [activeScreenTrack, screenVideoRef]);
 
-  // Use LiveKit participants if available, fallback to mock
-  const camerasActive = liveKitParticipants.length > 0
-    ? liveKitParticipants
-    : members.filter((m) => m.status === 'online' && !m.isDeafened).slice(0, 5);
+  // Lista de participantes reais na chamada
+  // Se liveKitParticipants estiver vazio, exibe o próprio usuário local
+  const displayParticipants: { id: string; name: string; isMuted: boolean; isSpeaking: boolean; isSelf: boolean }[] =
+    liveKitParticipants.length > 0
+      ? liveKitParticipants.map((p) => {
+          const isSelf = p.identity === nickname || p.identity === 'self';
+          return {
+            id: p.identity,
+            name: isSelf ? `${nickname} (Você)` : p.name || p.identity,
+            isMuted: isSelf ? isMuted : p.isMuted,
+            isSpeaking: p.isSpeaking,
+            isSelf,
+          };
+        })
+      : [
+          {
+            id: 'self',
+            name: `${nickname || 'Você'} (Você)`,
+            isMuted: isMuted,
+            isSpeaking: false,
+            isSelf: true,
+          },
+        ];
 
   const getAvatarColor = (name: string): string => {
     const colors = ['#5865f2', '#3ba55d', '#faa81a', '#ed4245', '#eb459e', '#9b59b6', '#e67e22', '#1abc9c'];
@@ -48,106 +92,176 @@ export default function StageView({
     }
   };
 
+  const streamerName = streamState.streamerId === nickname || streamState.streamerId === 'self'
+    ? `${nickname} (Você)`
+    : streamState.streamerId;
+
   return (
     <div className="stage-view">
-      {/* Header */}
+      {/* Header do Palco de Voz */}
       <div className="stage-view__header">
         <div className="stage-view__header-info">
-          <span className="stage-view__live-badge">Ao Vivo</span>
-          <span className="stage-view__stream-title">
-            {streamerName ? `${streamerName} está transmitindo` : 'Transmissão ativa'}
-          </span>
+          {streamState.isActive ? (
+            <>
+              <span className="stage-view__live-badge">Ao Vivo</span>
+              <span className="stage-view__stream-title">
+                {streamerName ? `${streamerName} está transmitindo` : 'Transmissão de Tela'}
+              </span>
+            </>
+          ) : (
+            <>
+              <span style={{ fontSize: '1.2rem', marginRight: '4px' }}>🔊</span>
+              <span className="stage-view__stream-title">{channelName}</span>
+              <span style={{ color: 'var(--text-muted, #949ba4)', fontSize: '0.85rem', marginLeft: '8px' }}>
+                ({displayParticipants.length} participante{displayParticipants.length === 1 ? '' : 's'})
+              </span>
+            </>
+          )}
         </div>
+
         <div className="stage-view__header-actions">
-          <button className="stage-view__btn stage-view__btn--secondary" onClick={handleToggleFullscreen}>
-            <svg className="stage-view__btn-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
-            </svg>
-            Tela Cheia
-          </button>
-          <button className="stage-view__btn stage-view__btn--stop" onClick={onStopStream}>
-            <svg className="stage-view__btn-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" />
-              <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="2" />
-            </svg>
-            Parar
-          </button>
+          {streamState.isActive && (
+            <>
+              <button className="stage-view__btn stage-view__btn--secondary" onClick={handleToggleFullscreen} title="Tela Cheia">
+                Tela Cheia
+              </button>
+              <button className="stage-view__btn stage-view__btn--stop" onClick={onStopStream} title="Parar Transmissão">
+                Parar Transmissão
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Camera Carousel — shows LiveKit participants */}
-      <div className="stage-view__cameras">
-        {camerasActive.map((participant) => {
-          const name = 'name' in participant ? participant.name : (participant as Member).name;
-          const id = 'identity' in participant ? participant.identity : (participant as Member).id;
-          const isSpeaking = 'isSpeaking' in participant ? participant.isSpeaking : false;
-
-          return (
-            <div
-              key={id}
-              className={`stage-view__camera-card ${isSpeaking ? 'stage-view__camera-card--speaking' : ''}`}
-            >
-              <div className="stage-view__camera-placeholder">
-                <div
-                  className="stage-view__camera-avatar"
-                  style={{ background: getAvatarColor(name) }}
-                >
-                  {getInitials(name)}
+      {/* CASO 1: Transmissão de tela ativa */}
+      {streamState.isActive ? (
+        <div className="stage-view__stream-layout">
+          {/* Mini-carrossel de participantes no topo */}
+          <div className="stage-view__cameras">
+            {displayParticipants.map((p) => (
+              <div
+                key={p.id}
+                className={`stage-view__camera-card ${p.isSpeaking ? 'stage-view__camera-card--speaking' : ''}`}
+              >
+                <div className="stage-view__camera-placeholder">
+                  <div
+                    className="stage-view__camera-avatar"
+                    style={{ background: getAvatarColor(p.name) }}
+                  >
+                    {getInitials(p.name)}
+                  </div>
+                  <span className="stage-view__camera-name">{p.name}</span>
+                  {p.isMuted && <span style={{ fontSize: '0.7rem' }}>🔇</span>}
                 </div>
-                <span className="stage-view__camera-name">{name}</span>
-                {isSpeaking && <span className="stage-view__speaking-indicator">🔊</span>}
               </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Main Stream Area — real video from LiveKit */}
-      <div className="stage-view__main">
-        {/* Real screen share video element */}
-        <video
-          ref={screenVideoRef}
-          className="stage-view__video"
-          autoPlay
-          playsInline
-          muted
-          style={{
-            display: streamState.isActive ? 'block' : 'none',
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-            background: '#000',
-            borderRadius: '8px',
-          }}
-        />
-
-        {/* Placeholder when no stream */}
-        {!streamState.isActive && (
-          <div className="stage-view__stream-placeholder">
-            <div className="stage-view__stream-placeholder-icon">🖥️</div>
-            <div className="stage-view__stream-placeholder-text">
-              {streamerName ? `Transmissão de ${streamerName}` : 'Aguardando transmissão...'}
-            </div>
-            <div className="stage-view__stream-placeholder-hint">
-              A transmissão de tela aparecerá aqui quando conectada ao servidor LiveKit
-            </div>
+            ))}
           </div>
-        )}
 
-        {/* Overlay Controls (appear on hover) */}
-        <div className="stage-view__overlay">
-          <button className="stage-view__overlay-btn" data-tooltip="Volume">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-            </svg>
-          </button>
-          <button className="stage-view__overlay-btn" data-tooltip="Tela Cheia" onClick={handleToggleFullscreen}>
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
-            </svg>
-          </button>
+          {/* Área principal do Vídeo da Tela */}
+          <div className="stage-view__main">
+            <video
+              ref={screenVideoRef}
+              className="stage-view__video"
+              autoPlay
+              playsInline
+              muted={streamState.streamerId === nickname || streamState.streamerId === 'self'}
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        /* CASO 2: Sala de Voz Normal (Sem transmissão de tela) */
+        <div className="voice-grid">
+          {/* Grid com cartões dos participantes */}
+          <div className="voice-grid__participants">
+            {displayParticipants.map((p) => (
+              <div
+                key={p.id}
+                className={`voice-card ${p.isSpeaking ? 'voice-card--speaking' : ''}`}
+              >
+                <div
+                  className="voice-card__avatar"
+                  style={{ background: getAvatarColor(p.name) }}
+                >
+                  {getInitials(p.name)}
+                </div>
+                <div className="voice-card__name" title={p.name}>
+                  {p.name}
+                </div>
+
+                {p.isMuted && (
+                  <div className="voice-card__status" title="Microfone Desativado">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#ed4245">
+                      <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                      <line x1="3" y1="3" x2="21" y2="21" stroke="#ed4245" strokeWidth="2.5" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Mensagem se for o primeiro usuário na chamada */}
+          {displayParticipants.length === 1 && (
+            <div className="voice-grid__empty-hint">
+              🎉 <strong>Você conectou na chamada com sucesso!</strong>
+              <br />
+              Aguardando amigos entrarem na <em>{channelName}</em>... Qualquer pessoa que conectar no servidor poderá entrar nesta sala.
+            </div>
+          )}
+
+          {/* Barra de Controles Rápidos da Chamada */}
+          <div className="voice-grid__controls">
+            {/* Microfone */}
+            <button
+              className={`voice-grid__ctrl-btn ${isMuted ? 'voice-grid__ctrl-btn--active' : ''}`}
+              onClick={onToggleMute}
+              title={isMuted ? 'Ativar Microfone' : 'Desativar Microfone'}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                {isMuted && <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" strokeWidth="2" />}
+              </svg>
+            </button>
+
+            {/* Fone / Áudio */}
+            <button
+              className={`voice-grid__ctrl-btn ${isDeafened ? 'voice-grid__ctrl-btn--active' : ''}`}
+              onClick={onToggleDeafen}
+              title={isDeafened ? 'Ativar Som' : 'Desativar Som'}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h2v-8H4v-2c0-4.42 3.58-8 8-8s8 3.58 8 8v2h-4v8h2c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z" />
+                {isDeafened && <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" strokeWidth="2" />}
+              </svg>
+            </button>
+
+            {/* Compartilhar Tela */}
+            <button
+              className="voice-grid__ctrl-btn"
+              onClick={onStartStream}
+              title="Compartilhar Tela"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" />
+              </svg>
+            </button>
+
+            {/* Desconectar Chamada */}
+            {voiceState.isConnected && (
+              <button
+                className="voice-grid__ctrl-btn voice-grid__ctrl-btn--disconnect"
+                onClick={onVoiceDisconnect}
+                title="Desconectar da Chamada"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" transform="rotate(45 12 12)" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

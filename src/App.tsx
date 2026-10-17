@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { AppConfig, Screen, Channel, Member, Message } from './types';
-import { MOCK_MEMBERS, MOCK_CHANNELS, MOCK_MESSAGES } from './data/mockData';
+import { MOCK_CHANNELS } from './data/mockData';
 import { getLiveKitUrl, fetchLiveKitToken, getTokenServerUrl } from './config/livekit';
 import { useLiveKit } from './hooks/useLiveKit';
 import LoginScreen from './components/LoginScreen';
@@ -16,14 +16,68 @@ function App() {
   // --- App state ---
   const [currentChannelId, setCurrentChannelId] = useState('ch-text-1');
   const [channels, setChannels] = useState<Channel[]>(MOCK_CHANNELS);
-  const [members] = useState<Member[]>(MOCK_MEMBERS);
-  const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   // --- LiveKit real voice/video ---
   const liveKit = useLiveKit();
 
   // --- Settings modal ---
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // --- Membros reais conectados ---
+  const realMembers = useMemo<Member[]>(() => {
+    const list: Member[] = [
+      {
+        id: 'self',
+        name: config.nickname ? `${config.nickname} (Você)` : 'Você',
+        avatar: '',
+        status: 'online',
+        isMuted: liveKit.voiceState.isMuted,
+        isDeafened: liveKit.voiceState.isDeafened,
+        isStreaming: liveKit.streamState.isActive,
+      },
+    ];
+
+    liveKit.participants.forEach((p) => {
+      if (p.identity !== config.nickname && p.identity !== 'self') {
+        list.push({
+          id: p.identity,
+          name: p.name || p.identity,
+          avatar: '',
+          status: 'online',
+          isMuted: p.isMuted,
+          isDeafened: false,
+          isStreaming: !!p.screenTrack,
+        });
+      }
+    });
+
+    return list;
+  }, [config.nickname, liveKit.voiceState.isMuted, liveKit.voiceState.isDeafened, liveKit.streamState.isActive, liveKit.participants]);
+
+  // Sincroniza os membros conectados aos canais de voz dinamicamente
+  useEffect(() => {
+    setChannels((prev) =>
+      prev.map((ch) => {
+        if (ch.type === 'voice') {
+          if (liveKit.voiceState.isConnected && ch.id === liveKit.voiceState.channelId) {
+            const remoteIds = liveKit.participants
+              .filter((p) => p.identity !== config.nickname && p.identity !== 'self')
+              .map((p) => p.identity);
+            return {
+              ...ch,
+              connectedMembers: ['self', ...remoteIds],
+            };
+          }
+          return {
+            ...ch,
+            connectedMembers: [],
+          };
+        }
+        return ch;
+      })
+    );
+  }, [liveKit.voiceState.isConnected, liveKit.voiceState.channelId, liveKit.participants, config.nickname]);
 
   // --- Handlers ---
   const handleConnect = useCallback((newConfig: AppConfig) => {
@@ -37,70 +91,44 @@ function App() {
 
   const handleVoiceConnect = useCallback(async (channelId: string) => {
     try {
-      // Fetch a token from the token server
+      setCurrentChannelId(channelId);
+
+      // Obter token do token-server
       const tokenUrl = getTokenServerUrl(config.host);
       const roomName = `voice-${channelId}`;
-      console.log(`[App] Fetching token from ${tokenUrl} for room ${roomName}...`);
+      console.log(`[App] Solicitando token de ${tokenUrl} para sala ${roomName}...`);
 
       let token: string;
       try {
         token = await fetchLiveKitToken(tokenUrl, roomName, config.nickname);
-        console.log('[App] Token received successfully');
+        console.log('[App] Token recebido com sucesso');
       } catch (tokenErr) {
         const msg = `Não foi possível obter token do servidor. Verifique se o token-server está rodando em ${tokenUrl}`;
-        console.error('[App] Token fetch failed:', tokenErr);
+        console.error('[App] Falha ao obter token:', tokenErr);
         alert(msg);
         return;
       }
 
-      // Connect to LiveKit room
+      // Conectar à sala LiveKit
       const livekitUrl = getLiveKitUrl(config.host, config.port);
-      console.log(`[App] Connecting to LiveKit at ${livekitUrl}...`);
+      console.log(`[App] Conectando ao LiveKit em ${livekitUrl}...`);
 
       try {
         await liveKit.connectToRoom(livekitUrl, token, channelId);
-        console.log('[App] Connected to LiveKit!');
+        console.log('[App] Conectado ao LiveKit!');
       } catch (lkErr) {
         const msg = `Não foi possível conectar ao LiveKit em ${livekitUrl}. Verifique se o servidor está rodando.`;
-        console.error('[App] LiveKit connection failed:', lkErr);
+        console.error('[App] Falha na conexão LiveKit:', lkErr);
         alert(msg);
-        return;
       }
-
-      // Update channel UI to show self as connected
-      setChannels((prev) =>
-        prev.map((ch) => {
-          if (ch.id === channelId && ch.type === 'voice') {
-            const alreadyConnected = ch.connectedMembers.includes('self');
-            return alreadyConnected
-              ? ch
-              : { ...ch, connectedMembers: [...ch.connectedMembers, 'self'] };
-          }
-          // Remove from other voice channels
-          if (ch.type === 'voice' && ch.id !== channelId) {
-            return {
-              ...ch,
-              connectedMembers: ch.connectedMembers.filter((id) => id !== 'self'),
-            };
-          }
-          return ch;
-        })
-      );
     } catch (error) {
-      console.error('[App] Unexpected error in voice connect:', error);
-      alert('Erro inesperado ao conectar ao canal de voz. Verifique o console.');
+      console.error('[App] Erro inesperado ao conectar voz:', error);
+      alert('Erro inesperado ao conectar ao canal de voz.');
     }
   }, [config, liveKit]);
 
   const handleVoiceDisconnect = useCallback(() => {
     liveKit.disconnect();
-    setChannels((prev) =>
-      prev.map((ch) =>
-        ch.type === 'voice'
-          ? { ...ch, connectedMembers: ch.connectedMembers.filter((id) => id !== 'self') }
-          : ch
-      )
-    );
   }, [liveKit]);
 
   const handleSendMessage = useCallback(
@@ -143,11 +171,12 @@ function App() {
         <Dashboard
           nickname={config.nickname}
           channels={channels}
-          members={members}
+          members={realMembers}
           messages={messages}
           currentChannelId={currentChannelId}
           voiceState={liveKit.voiceState}
           streamState={liveKit.streamState}
+          activeScreenTrack={liveKit.activeScreenTrack}
           isMuted={liveKit.voiceState.isMuted}
           isDeafened={liveKit.voiceState.isDeafened}
           onChannelSelect={handleChannelSelect}

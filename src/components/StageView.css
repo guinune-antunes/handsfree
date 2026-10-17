@@ -282,3 +282,161 @@
   font-size: 1rem;
   color: var(--text-muted);
 }
+
+/* --- Stream Layout --- */
+.stage-view__stream-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+/* --- Voice Grid (Sala de Chamada) --- */
+.voice-grid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 24px 24px 24px;
+  gap: 20px;
+  overflow-y: auto;
+  background: radial-gradient(circle at center, #1e1f22 0%, #111214 100%);
+}
+
+.voice-grid__participants {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 900px;
+  margin: auto 0;
+}
+
+.voice-card {
+  width: 200px;
+  height: 180px;
+  background: #2b2d31;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.voice-card:hover {
+  transform: translateY(-2px);
+  background: #313338;
+}
+
+.voice-card--speaking {
+  border-color: #23a55a;
+  box-shadow: 0 0 16px rgba(35, 165, 90, 0.5);
+}
+
+.voice-card__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.voice-card__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f2f3f5;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.voice-card__status {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-grid__empty-hint {
+  text-align: center;
+  color: #949ba4;
+  font-size: 0.95rem;
+  max-width: 500px;
+  line-height: 1.5;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 14px 20px;
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.voice-grid__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #18191c;
+  padding: 10px 24px;
+  border-radius: 36px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.voice-grid__ctrl-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #2b2d31;
+  color: #f2f3f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.voice-grid__ctrl-btn:hover {
+  background: #35373c;
+  transform: scale(1.06);
+}
+
+.voice-grid__ctrl-btn--active {
+  background: #ed4245;
+  color: white;
+}
+
+.voice-grid__ctrl-btn--active:hover {
+  background: #da373c;
+}
+
+.voice-grid__ctrl-btn--disconnect {
+  background: #ed4245;
+  color: white;
+  width: 52px;
+  height: 52px;
+}
+
+.voice-grid__ctrl-btn--disconnect:hover {
+  background: #da373c;
+  transform: scale(1.08);
+}
+

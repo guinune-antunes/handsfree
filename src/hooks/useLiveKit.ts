@@ -30,6 +30,7 @@ export interface UseLiveKitReturn {
   streamState: StreamState;
   participants: LiveKitParticipant[];
   connectionState: ConnectionState | 'disconnected';
+  activeScreenTrack: MediaStreamTrack | null;
 
   // Actions
   connectToRoom: (url: string, token: string, channelId: string) => Promise<void>;
@@ -61,6 +62,7 @@ export function useLiveKit(): UseLiveKitReturn {
     type: null,
   });
 
+  const [activeScreenTrack, setActiveScreenTrack] = useState<MediaStreamTrack | null>(null);
   const [participants, setParticipants] = useState<LiveKitParticipant[]>([]);
   const [connectionState, setConnectionState] = useState<ConnectionState | 'disconnected'>('disconnected');
   const [isDeafened, setIsDeafened] = useState(false);
@@ -137,16 +139,29 @@ export function useLiveKit(): UseLiveKitReturn {
   const attachScreenShare = useCallback((participant: Participant, publication: RemoteTrackPublication) => {
     if (publication.source !== Track.Source.ScreenShare) return;
     const track = publication.track;
-    if (!track || !screenVideoRef.current) return;
+    if (!track) return;
 
-    screenVideoRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
-    screenVideoRef.current.play().catch(() => {});
-
+    setActiveScreenTrack(track.mediaStreamTrack);
     setStreamState({
       isActive: true,
       streamerId: participant.identity,
       type: 'screen',
     });
+  }, []);
+
+  // --- Stop screen share ---
+  const stopScreenShare = useCallback(() => {
+    const room = roomRef.current;
+    if (room) {
+      room.localParticipant.setScreenShareEnabled(false).catch(() => {});
+    }
+
+    setActiveScreenTrack(null);
+    setStreamState({ isActive: false, streamerId: null, type: null });
+
+    if (screenVideoRef.current) {
+      screenVideoRef.current.srcObject = null;
+    }
   }, []);
 
   // --- Connect to a LiveKit room ---
@@ -182,6 +197,8 @@ export function useLiveKit(): UseLiveKitReturn {
           isMuted: false,
           isDeafened: false,
         });
+        setActiveScreenTrack(null);
+        setStreamState({ isActive: false, streamerId: null, type: null });
         setParticipants([]);
       }
     });
@@ -206,17 +223,35 @@ export function useLiveKit(): UseLiveKitReturn {
       updateParticipants();
     });
 
-    room.on(RoomEvent.TrackUnsubscribed, (_track, publication, participant) => {
+    room.on(RoomEvent.TrackUnsubscribed, (_track, publication, _participant) => {
       if (publication.source === Track.Source.Microphone) {
-        const audioEl = audioElementsRef.current.get(participant.identity);
+        const audioEl = audioElementsRef.current.get(_participant.identity);
         if (audioEl) {
           audioEl.srcObject = null;
-          audioElementsRef.current.delete(participant.identity);
+          audioElementsRef.current.delete(_participant.identity);
         }
       } else if (publication.source === Track.Source.ScreenShare) {
-        if (streamState.streamerId === participant.identity) {
-          setStreamState({ isActive: false, streamerId: null, type: null });
-        }
+        setActiveScreenTrack(null);
+        setStreamState({ isActive: false, streamerId: null, type: null });
+      }
+      updateParticipants();
+    });
+
+    room.on(RoomEvent.LocalTrackPublished, (publication) => {
+      if (publication.source === Track.Source.ScreenShare && publication.track) {
+        const track = publication.track.mediaStreamTrack;
+        setActiveScreenTrack(track);
+        track.onended = () => {
+          stopScreenShare();
+        };
+      }
+      updateParticipants();
+    });
+
+    room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
+      if (publication.source === Track.Source.ScreenShare) {
+        setActiveScreenTrack(null);
+        setStreamState({ isActive: false, streamerId: null, type: null });
       }
       updateParticipants();
     });
@@ -224,7 +259,6 @@ export function useLiveKit(): UseLiveKitReturn {
     room.on(RoomEvent.TrackMuted, () => updateParticipants());
     room.on(RoomEvent.TrackUnmuted, () => updateParticipants());
     room.on(RoomEvent.ActiveSpeakersChanged, () => updateParticipants());
-    room.on(RoomEvent.LocalTrackPublished, () => updateParticipants());
 
     // --- Connect ---
     try {
@@ -237,7 +271,7 @@ export function useLiveKit(): UseLiveKitReturn {
       roomRef.current = null;
       throw error;
     }
-  }, [updateParticipants, attachRemoteAudio, attachScreenShare, streamState.streamerId]);
+  }, [updateParticipants, attachRemoteAudio, attachScreenShare, stopScreenShare]);
 
   // --- Disconnect ---
   const disconnect = useCallback(() => {
@@ -257,6 +291,7 @@ export function useLiveKit(): UseLiveKitReturn {
       isMuted: false,
       isDeafened: false,
     });
+    setActiveScreenTrack(null);
     setStreamState({ isActive: false, streamerId: null, type: null });
     setParticipants([]);
     setConnectionState('disconnected');
@@ -298,36 +333,25 @@ export function useLiveKit(): UseLiveKitReturn {
     if (!room) return;
 
     try {
-      await room.localParticipant.setScreenShareEnabled(true);
+      const pub = await room.localParticipant.setScreenShareEnabled(true);
+      const track = pub?.track?.mediaStreamTrack;
+
+      if (track) {
+        setActiveScreenTrack(track);
+        track.onended = () => {
+          stopScreenShare();
+        };
+      }
+
       setStreamState({
         isActive: true,
         streamerId: room.localParticipant.identity,
         type: 'screen',
       });
-
-      // Attach local screen share to video element
-      const screenPub = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
-      if (screenPub?.track && screenVideoRef.current) {
-        screenVideoRef.current.srcObject = new MediaStream([screenPub.track.mediaStreamTrack]);
-        screenVideoRef.current.play().catch(() => {});
-      }
     } catch (error) {
       console.error('[LiveKit] Screen share failed:', error);
     }
-  }, []);
-
-  // --- Stop screen share ---
-  const stopScreenShare = useCallback(() => {
-    const room = roomRef.current;
-    if (!room) return;
-
-    room.localParticipant.setScreenShareEnabled(false);
-    setStreamState({ isActive: false, streamerId: null, type: null });
-
-    if (screenVideoRef.current) {
-      screenVideoRef.current.srcObject = null;
-    }
-  }, []);
+  }, [stopScreenShare]);
 
   // --- Cleanup on unmount ---
   useEffect(() => {
@@ -345,6 +369,7 @@ export function useLiveKit(): UseLiveKitReturn {
     streamState,
     participants,
     connectionState,
+    activeScreenTrack,
     connectToRoom,
     disconnect,
     toggleMute,

@@ -16,6 +16,7 @@ interface DashboardProps {
   currentChannelId: string;
   voiceState: VoiceState;
   streamState: StreamState;
+  activeScreenTrack?: MediaStreamTrack | null;
   isMuted: boolean;
   isDeafened: boolean;
   onChannelSelect: (channelId: string) => void;
@@ -39,6 +40,7 @@ export default function Dashboard({
   currentChannelId,
   voiceState,
   streamState,
+  activeScreenTrack,
   isMuted,
   isDeafened,
   onChannelSelect,
@@ -56,9 +58,13 @@ export default function Dashboard({
   const currentChannel = channels.find((ch) => ch.id === currentChannelId);
   const channelMessages = messages.filter((m) => m.channelId === currentChannelId);
 
+  // Se o canal selecionado for de voz ou se houver transmissão ativa, exibe o palco da chamada
+  const isVoiceChannel = currentChannel?.type === 'voice';
+  const showStage = isVoiceChannel || streamState.isActive;
+
   return (
     <div className="dashboard">
-      {/* Left: Channels + User Bar */}
+      {/* Esquerda: Canais + Barra de Usuário */}
       <div className="dashboard__sidebar">
         <ChannelSidebar
           channels={channels}
@@ -84,15 +90,24 @@ export default function Dashboard({
         />
       </div>
 
-      {/* Center: Chat or Stage */}
+      {/* Centro: Chat ou Palco de Voz/Transmissão */}
       <div className="dashboard__center">
-        {streamState.isActive ? (
+        {showStage ? (
           <StageView
-            members={members}
+            channelName={currentChannel?.name || 'Canal de Voz'}
+            voiceState={voiceState}
             streamState={streamState}
+            activeScreenTrack={activeScreenTrack}
             onStopStream={onStopStream}
+            onStartStream={onStartStream}
+            onToggleMute={onToggleMute}
+            onToggleDeafen={onToggleDeafen}
+            onVoiceDisconnect={onVoiceDisconnect}
             liveKitParticipants={liveKitParticipants}
             screenVideoRef={screenVideoRef}
+            nickname={nickname}
+            isMuted={isMuted}
+            isDeafened={isDeafened}
           />
         ) : currentChannel ? (
           <ChatPanel
@@ -103,7 +118,7 @@ export default function Dashboard({
         ) : null}
       </div>
 
-      {/* Right: Members */}
+      {/* Direita: Lista de Membros Reais */}
       <div className="dashboard__members">
         <MembersList members={members} />
       </div>

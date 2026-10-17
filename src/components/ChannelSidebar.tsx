@@ -1,5 +1,5 @@
 import type { Channel, Member, VoiceState } from '../types';
-import { getMemberById, getInitials } from '../data/mockData';
+import { getInitials } from '../data/mockData';
 import './ChannelSidebar.css';
 
 interface ChannelSidebarProps {
@@ -15,7 +15,7 @@ interface ChannelSidebarProps {
 
 export default function ChannelSidebar({
   channels,
-  members: _members,
+  members,
   currentChannelId,
   voiceState,
   nickname,
@@ -31,10 +31,11 @@ export default function ChannelSidebar({
     : null;
 
   const handleChannelClick = (channel: Channel) => {
-    if (channel.type === 'text') {
-      onChannelSelect(channel.id);
-    } else {
-      onVoiceConnect(channel.id);
+    onChannelSelect(channel.id);
+    if (channel.type === 'voice') {
+      if (!voiceState.isConnected || voiceState.channelId !== channel.id) {
+        onVoiceConnect(channel.id);
+      }
     }
   };
 
@@ -42,7 +43,7 @@ export default function ChannelSidebar({
     <div className="channel-sidebar">
       {/* Server Header */}
       <div className="channel-sidebar__header">
-        <span className="channel-sidebar__server-name">Servidor do Xandão</span>
+        <span className="channel-sidebar__server-name">Discord Clone Leve</span>
         <svg className="channel-sidebar__header-icon" viewBox="0 0 18 18" fill="currentColor">
           <path d="M4.5 7.5L9 12l4.5-4.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
         </svg>
@@ -85,7 +86,7 @@ export default function ChannelSidebar({
           {voiceChannels.map((channel) => (
             <div key={channel.id}>
               <div
-                className={`channel-item ${voiceState.channelId === channel.id ? 'channel-item--active' : ''}`}
+                className={`channel-item ${currentChannelId === channel.id || voiceState.channelId === channel.id ? 'channel-item--active' : ''}`}
                 onClick={() => handleChannelClick(channel)}
               >
                 <span className="channel-item__icon">🔊</span>
@@ -96,12 +97,10 @@ export default function ChannelSidebar({
               {channel.connectedMembers.length > 0 && (
                 <div className="voice-users">
                   {channel.connectedMembers.map((memberId) => {
-                    const isSelf = memberId === 'self';
-                    const mockMember = getMemberById(memberId);
-                    if (!isSelf && !mockMember) return null;
-
-                    const memberName = isSelf ? (nickname || 'Você') : mockMember!.name;
-                    const isMuted = isSelf ? voiceState.isMuted : mockMember!.isMuted;
+                    const isSelf = memberId === 'self' || memberId === nickname;
+                    const foundMember = members.find((m) => m.id === memberId);
+                    const memberName = isSelf ? (nickname ? `${nickname} (Você)` : 'Você') : (foundMember?.name || memberId);
+                    const isMuted = isSelf ? voiceState.isMuted : (foundMember?.isMuted ?? false);
 
                     return (
                       <div key={memberId} className="voice-user">
@@ -110,7 +109,6 @@ export default function ChannelSidebar({
                         </div>
                         <span className="voice-user__name">
                           {memberName}
-                          {isSelf && <span style={{ opacity: 0.6, fontSize: '0.75rem', marginLeft: '4px' }}>(Você)</span>}
                         </span>
                         {isMuted && (
                           <svg className="voice-user__mute-icon" viewBox="0 0 24 24" fill="currentColor">
