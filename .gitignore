@@ -1,0 +1,7 @@
+# Server .gitignore
+node_modules/
+dist/
+target/
+.env
+discord-clone-leve/
+*.log
