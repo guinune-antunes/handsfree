@@ -12,7 +12,8 @@ import {
   ConnectionState,
   type Participant,
 } from 'livekit-client';
-import type { VoiceState, StreamState } from '../types';
+import type { VoiceState, StreamState, ActiveStream, StreamQualityPreset } from '../types';
+import { DEFAULT_STREAM_PRESET } from '../config/streamQuality';
 
 export interface LiveKitParticipant {
   identity: string;
@@ -29,6 +30,8 @@ export interface UseLiveKitReturn {
   voiceState: VoiceState;
   streamState: StreamState;
   participants: LiveKitParticipant[];
+  activeStreams: ActiveStream[];
+  streamPreset: StreamQualityPreset;
   connectionState: ConnectionState | 'disconnected';
   activeScreenTrack: MediaStreamTrack | null;
 
@@ -37,8 +40,9 @@ export interface UseLiveKitReturn {
   disconnect: () => void;
   toggleMute: () => Promise<void>;
   toggleDeafen: () => void;
-  startScreenShare: () => Promise<void>;
+  startScreenShare: (preset?: StreamQualityPreset) => Promise<void>;
   stopScreenShare: () => void;
+  setStreamPreset: (preset: StreamQualityPreset) => void;
 
   // Refs for attaching media
   screenVideoRef: React.RefObject<HTMLVideoElement | null>;
@@ -63,6 +67,8 @@ export function useLiveKit(): UseLiveKitReturn {
   });
 
   const [activeScreenTrack, setActiveScreenTrack] = useState<MediaStreamTrack | null>(null);
+  const [activeStreams, setActiveStreams] = useState<ActiveStream[]>([]);
+  const [streamPreset, setStreamPreset] = useState<StreamQualityPreset>(DEFAULT_STREAM_PRESET);
   const [participants, setParticipants] = useState<LiveKitParticipant[]>([]);
   const [connectionState, setConnectionState] = useState<ConnectionState | 'disconnected'>('disconnected');
   const [isDeafened, setIsDeafened] = useState(false);
@@ -96,6 +102,72 @@ export function useLiveKit(): UseLiveKitReturn {
     };
   }, []);
 
+  // --- Helper: update streams list (multi-stream support) ---
+  const updateStreams = useCallback(() => {
+    const room = roomRef.current;
+    if (!room) {
+      setActiveStreams([]);
+      setActiveScreenTrack(null);
+      setStreamState({ isActive: false, streamerId: null, type: null });
+      return;
+    }
+
+    const streams: ActiveStream[] = [];
+
+    // 1. Local participant screen share
+    if (room.localParticipant) {
+      const localScreenPub = Array.from(room.localParticipant.trackPublications.values()).find(
+        (pub) => pub.source === Track.Source.ScreenShare && pub.track
+      );
+      if (localScreenPub && localScreenPub.track) {
+        streams.push({
+          participantId: room.localParticipant.identity,
+          participantName: `${room.localParticipant.name || room.localParticipant.identity} (Você)`,
+          track: localScreenPub.track.mediaStreamTrack,
+          isLocal: true,
+          qualityLabel: '1080p • 60 FPS',
+        });
+      }
+    }
+
+    // 2. Remote participants screen share
+    room.remoteParticipants.forEach((participant) => {
+      const remoteScreenPub = Array.from(participant.trackPublications.values()).find(
+        (pub) => pub.source === Track.Source.ScreenShare && pub.track
+      );
+      if (remoteScreenPub && remoteScreenPub.track) {
+        streams.push({
+          participantId: participant.identity,
+          participantName: participant.name || participant.identity,
+          track: remoteScreenPub.track.mediaStreamTrack,
+          isLocal: false,
+          qualityLabel: '1080p • 60 FPS',
+        });
+      }
+    });
+
+    setActiveStreams(streams);
+
+    if (streams.length > 0) {
+      setActiveScreenTrack(streams[0].track);
+      setStreamState({
+        isActive: true,
+        streamerId: streams[0].participantId,
+        type: 'screen',
+      });
+    } else {
+      setActiveScreenTrack(null);
+      setStreamState({
+        isActive: false,
+        streamerId: null,
+        type: null,
+      });
+      if (screenVideoRef.current) {
+        screenVideoRef.current.srcObject = null;
+      }
+    }
+  }, []);
+
   // --- Helper: update participants list ---
   const updateParticipants = useCallback(() => {
     const room = roomRef.current;
@@ -114,7 +186,8 @@ export function useLiveKit(): UseLiveKitReturn {
     });
 
     setParticipants(parts);
-  }, [extractParticipantInfo]);
+    updateStreams();
+  }, [extractParticipantInfo, updateStreams]);
 
   // --- Helper: attach remote audio ---
   const attachRemoteAudio = useCallback((participant: RemoteParticipant, publication: RemoteTrackPublication) => {
@@ -135,34 +208,69 @@ export function useLiveKit(): UseLiveKitReturn {
     audioElementsRef.current.set(participant.identity, audioEl);
   }, [isDeafened]);
 
-  // --- Helper: attach screen share ---
-  const attachScreenShare = useCallback((participant: Participant, publication: RemoteTrackPublication) => {
-    if (publication.source !== Track.Source.ScreenShare) return;
-    const track = publication.track;
-    if (!track) return;
-
-    setActiveScreenTrack(track.mediaStreamTrack);
-    setStreamState({
-      isActive: true,
-      streamerId: participant.identity,
-      type: 'screen',
-    });
-  }, []);
-
   // --- Stop screen share ---
   const stopScreenShare = useCallback(() => {
     const room = roomRef.current;
-    if (room) {
+    if (room && room.localParticipant) {
       room.localParticipant.setScreenShareEnabled(false).catch(() => {});
     }
 
-    setActiveScreenTrack(null);
-    setStreamState({ isActive: false, streamerId: null, type: null });
+    // Refresh streams immediately
+    setTimeout(() => {
+      updateStreams();
+      updateParticipants();
+    }, 100);
+  }, [updateStreams, updateParticipants]);
 
-    if (screenVideoRef.current) {
-      screenVideoRef.current.srcObject = null;
+  // --- Start screen share (1080p 60fps & custom preset support) ---
+  const startScreenShare = useCallback(async (customPreset?: StreamQualityPreset) => {
+    const room = roomRef.current;
+    if (!room || !room.localParticipant) return;
+
+    const preset = customPreset || streamPreset;
+
+    try {
+      console.log(`[LiveKit] Starting 60FPS stream: ${preset.width}x${preset.height} @ ${preset.fps}fps (${preset.bitrate / 1000000} Mbps)`);
+
+      const pub = await room.localParticipant.setScreenShareEnabled(
+        true,
+        {
+          audio: true,
+          resolution: {
+            width: preset.width,
+            height: preset.height,
+            frameRate: preset.fps,
+          },
+          contentHint: 'motion', // Prioritizes smooth 60fps motion for games and desktop
+        },
+        {
+          simulcast: false, // Prevents LiveKit from dropping to 360p
+          degradationPreference: 'maintain-framerate', // Never sacrifice 60 FPS
+          screenShareEncoding: {
+            maxBitrate: preset.bitrate,
+            maxFramerate: preset.fps,
+            priority: 'high',
+          },
+        }
+      );
+
+      const track = pub?.track?.mediaStreamTrack;
+      if (track) {
+        // Enforce motion content hint directly on WebRTC track
+        if ('contentHint' in track) {
+          track.contentHint = 'motion';
+        }
+        track.onended = () => {
+          stopScreenShare();
+        };
+      }
+
+      updateStreams();
+      updateParticipants();
+    } catch (error) {
+      console.error('[LiveKit] Screen share failed:', error);
     }
-  }, []);
+  }, [streamPreset, stopScreenShare, updateStreams, updateParticipants]);
 
   // --- Connect to a LiveKit room ---
   const connectToRoom = useCallback(async (url: string, token: string, channelId: string) => {
@@ -172,9 +280,26 @@ export function useLiveKit(): UseLiveKitReturn {
       roomRef.current = null;
     }
 
+    // CRUCIAL: Disable adaptiveStream and dynacast so LiveKit does NOT throttle or drop to 360p/720p!
     const room = new Room({
-      adaptiveStream: true,
-      dynacast: true,
+      adaptiveStream: false,
+      dynacast: false,
+      videoCaptureDefaults: {
+        resolution: {
+          width: 1920,
+          height: 1080,
+          frameRate: 60,
+        },
+      },
+      publishDefaults: {
+        simulcast: false,
+        degradationPreference: 'maintain-framerate',
+        screenShareEncoding: {
+          maxBitrate: 8_000_000,
+          maxFramerate: 60,
+          priority: 'high',
+        },
+      },
     });
 
     roomRef.current = room;
@@ -198,6 +323,7 @@ export function useLiveKit(): UseLiveKitReturn {
           isDeafened: false,
         });
         setActiveScreenTrack(null);
+        setActiveStreams([]);
         setStreamState({ isActive: false, streamerId: null, type: null });
         setParticipants([]);
       }
@@ -217,8 +343,6 @@ export function useLiveKit(): UseLiveKitReturn {
     room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
       if (track.source === Track.Source.Microphone) {
         attachRemoteAudio(participant, publication);
-      } else if (track.source === Track.Source.ScreenShare) {
-        attachScreenShare(participant, publication);
       }
       updateParticipants();
     });
@@ -230,9 +354,6 @@ export function useLiveKit(): UseLiveKitReturn {
           audioEl.srcObject = null;
           audioElementsRef.current.delete(_participant.identity);
         }
-      } else if (publication.source === Track.Source.ScreenShare) {
-        setActiveScreenTrack(null);
-        setStreamState({ isActive: false, streamerId: null, type: null });
       }
       updateParticipants();
     });
@@ -240,7 +361,9 @@ export function useLiveKit(): UseLiveKitReturn {
     room.on(RoomEvent.LocalTrackPublished, (publication) => {
       if (publication.source === Track.Source.ScreenShare && publication.track) {
         const track = publication.track.mediaStreamTrack;
-        setActiveScreenTrack(track);
+        if ('contentHint' in track) {
+          track.contentHint = 'motion';
+        }
         track.onended = () => {
           stopScreenShare();
         };
@@ -248,11 +371,7 @@ export function useLiveKit(): UseLiveKitReturn {
       updateParticipants();
     });
 
-    room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
-      if (publication.source === Track.Source.ScreenShare) {
-        setActiveScreenTrack(null);
-        setStreamState({ isActive: false, streamerId: null, type: null });
-      }
+    room.on(RoomEvent.LocalTrackUnpublished, () => {
       updateParticipants();
     });
 
@@ -271,7 +390,7 @@ export function useLiveKit(): UseLiveKitReturn {
       roomRef.current = null;
       throw error;
     }
-  }, [updateParticipants, attachRemoteAudio, attachScreenShare, stopScreenShare]);
+  }, [updateParticipants, attachRemoteAudio, stopScreenShare]);
 
   // --- Disconnect ---
   const disconnect = useCallback(() => {
@@ -292,6 +411,7 @@ export function useLiveKit(): UseLiveKitReturn {
       isDeafened: false,
     });
     setActiveScreenTrack(null);
+    setActiveStreams([]);
     setStreamState({ isActive: false, streamerId: null, type: null });
     setParticipants([]);
     setConnectionState('disconnected');
@@ -327,32 +447,6 @@ export function useLiveKit(): UseLiveKitReturn {
     }
   }, [isDeafened]);
 
-  // --- Start screen share ---
-  const startScreenShare = useCallback(async () => {
-    const room = roomRef.current;
-    if (!room) return;
-
-    try {
-      const pub = await room.localParticipant.setScreenShareEnabled(true);
-      const track = pub?.track?.mediaStreamTrack;
-
-      if (track) {
-        setActiveScreenTrack(track);
-        track.onended = () => {
-          stopScreenShare();
-        };
-      }
-
-      setStreamState({
-        isActive: true,
-        streamerId: room.localParticipant.identity,
-        type: 'screen',
-      });
-    } catch (error) {
-      console.error('[LiveKit] Screen share failed:', error);
-    }
-  }, [stopScreenShare]);
-
   // --- Cleanup on unmount ---
   useEffect(() => {
     return () => {
@@ -368,6 +462,8 @@ export function useLiveKit(): UseLiveKitReturn {
     voiceState,
     streamState,
     participants,
+    activeStreams,
+    streamPreset,
     connectionState,
     activeScreenTrack,
     connectToRoom,
@@ -376,6 +472,7 @@ export function useLiveKit(): UseLiveKitReturn {
     toggleDeafen,
     startScreenShare,
     stopScreenShare,
+    setStreamPreset,
     screenVideoRef,
   };
 }

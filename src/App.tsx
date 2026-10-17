@@ -6,6 +6,7 @@ import { useLiveKit } from './hooks/useLiveKit';
 import LoginScreen from './components/LoginScreen';
 import Dashboard from './components/Dashboard';
 import SettingsModal from './components/SettingsModal';
+import StreamQualityModal from './components/StreamQualityModal';
 import './App.css';
 
 function App() {
@@ -21,8 +22,9 @@ function App() {
   // --- LiveKit real voice/video ---
   const liveKit = useLiveKit();
 
-  // --- Settings modal ---
+  // --- Modals ---
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [qualityModalOpen, setQualityModalOpen] = useState(false);
 
   // --- Membros reais conectados ---
   const realMembers = useMemo<Member[]>(() => {
@@ -177,6 +179,7 @@ function App() {
           voiceState={liveKit.voiceState}
           streamState={liveKit.streamState}
           activeScreenTrack={liveKit.activeScreenTrack}
+          activeStreams={liveKit.activeStreams}
           isMuted={liveKit.voiceState.isMuted}
           isDeafened={liveKit.voiceState.isDeafened}
           onChannelSelect={handleChannelSelect}
@@ -188,6 +191,7 @@ function App() {
           onOpenSettings={() => setSettingsOpen(true)}
           onStartStream={handleStartStream}
           onStopStream={handleStopStream}
+          onOpenStreamQuality={() => setQualityModalOpen(true)}
           liveKitParticipants={liveKit.participants}
           screenVideoRef={liveKit.screenVideoRef}
         />
@@ -197,6 +201,15 @@ function App() {
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         onStartStream={handleStartStream}
+      />
+
+      <StreamQualityModal
+        isOpen={qualityModalOpen}
+        currentPreset={liveKit.streamPreset}
+        isStreaming={liveKit.streamState.isActive}
+        onClose={() => setQualityModalOpen(false)}
+        onSelectPreset={(preset) => liveKit.setStreamPreset(preset)}
+        onStartStreamWithPreset={(preset) => liveKit.startScreenShare(preset)}
       />
     </>
   );

@@ -55,6 +55,24 @@ export interface StreamState {
   type: 'screen' | 'camera' | null;
 }
 
+export interface StreamQualityPreset {
+  id: string;
+  label: string;
+  resolution: string;
+  fps: number;
+  width: number;
+  height: number;
+  bitrate: number;
+}
+
+export interface ActiveStream {
+  participantId: string;
+  participantName: string;
+  track: MediaStreamTrack;
+  isLocal: boolean;
+  qualityLabel?: string;
+}
+
 export interface AppState {
   screen: Screen;
   config: AppConfig;

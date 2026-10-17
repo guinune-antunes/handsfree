@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import type { Channel, Member, Message, VoiceState, StreamState } from '../types';
+import type { Channel, Member, Message, VoiceState, StreamState, ActiveStream } from '../types';
 import type { LiveKitParticipant } from '../hooks/useLiveKit';
 import ChannelSidebar from './ChannelSidebar';
 import ChatPanel from './ChatPanel';
@@ -17,6 +17,7 @@ interface DashboardProps {
   voiceState: VoiceState;
   streamState: StreamState;
   activeScreenTrack?: MediaStreamTrack | null;
+  activeStreams?: ActiveStream[];
   isMuted: boolean;
   isDeafened: boolean;
   onChannelSelect: (channelId: string) => void;
@@ -28,6 +29,7 @@ interface DashboardProps {
   onOpenSettings: () => void;
   onStartStream: () => void;
   onStopStream: () => void;
+  onOpenStreamQuality?: () => void;
   liveKitParticipants?: LiveKitParticipant[];
   screenVideoRef?: RefObject<HTMLVideoElement | null>;
 }
@@ -41,6 +43,7 @@ export default function Dashboard({
   voiceState,
   streamState,
   activeScreenTrack,
+  activeStreams,
   isMuted,
   isDeafened,
   onChannelSelect,
@@ -52,6 +55,7 @@ export default function Dashboard({
   onOpenSettings,
   onStartStream,
   onStopStream,
+  onOpenStreamQuality,
   liveKitParticipants,
   screenVideoRef,
 }: DashboardProps) {
@@ -60,7 +64,7 @@ export default function Dashboard({
 
   // Se o canal selecionado for de voz ou se houver transmissão ativa, exibe o palco da chamada
   const isVoiceChannel = currentChannel?.type === 'voice';
-  const showStage = isVoiceChannel || streamState.isActive;
+  const showStage = isVoiceChannel || streamState.isActive || (activeStreams && activeStreams.length > 0);
 
   return (
     <div className="dashboard">
@@ -98,8 +102,10 @@ export default function Dashboard({
             voiceState={voiceState}
             streamState={streamState}
             activeScreenTrack={activeScreenTrack}
+            activeStreams={activeStreams}
             onStopStream={onStopStream}
             onStartStream={onStartStream}
+            onOpenStreamQuality={onOpenStreamQuality}
             onToggleMute={onToggleMute}
             onToggleDeafen={onToggleDeafen}
             onVoiceDisconnect={onVoiceDisconnect}

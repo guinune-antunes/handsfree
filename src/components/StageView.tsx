@@ -1,5 +1,5 @@
-import { useEffect, type RefObject } from 'react';
-import type { StreamState, VoiceState } from '../types';
+import { useState, useRef, useEffect, type RefObject } from 'react';
+import type { StreamState, VoiceState, ActiveStream } from '../types';
 import type { LiveKitParticipant } from '../hooks/useLiveKit';
 import { getInitials } from '../data/mockData';
 import './StageView.css';
@@ -9,6 +9,7 @@ interface StageViewProps {
   voiceState: VoiceState;
   streamState: StreamState;
   activeScreenTrack?: MediaStreamTrack | null;
+  activeStreams?: ActiveStream[];
   liveKitParticipants?: LiveKitParticipant[];
   screenVideoRef?: RefObject<HTMLVideoElement | null>;
   nickname: string;
@@ -19,6 +20,91 @@ interface StageViewProps {
   onStartStream: () => void;
   onStopStream: () => void;
   onVoiceDisconnect: () => void;
+  onOpenStreamQuality?: () => void;
+}
+
+function StreamTile({
+  stream,
+  isFocused,
+  onToggleFocus,
+  onStopStream,
+  isSingle,
+}: {
+  stream: ActiveStream;
+  isFocused: boolean;
+  onToggleFocus: () => void;
+  onStopStream?: () => void;
+  isSingle: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current && stream.track) {
+      videoRef.current.srcObject = new MediaStream([stream.track]);
+      videoRef.current.play().catch(() => {});
+    }
+  }, [stream.track]);
+
+  const handleFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else {
+        videoRef.current.requestFullscreen().catch(() => {});
+      }
+    }
+  };
+
+  return (
+    <div
+      className={`stream-tile ${isFocused ? 'stream-tile--focused' : ''} ${isSingle ? 'stream-tile--single' : ''}`}
+      onClick={!isSingle ? onToggleFocus : undefined}
+      title={!isSingle ? (isFocused ? 'Clique para ver em tela dividida' : 'Clique para expandir') : undefined}
+    >
+      <div className="stream-tile__overlay-header">
+        <div className="stream-tile__info">
+          <span className="stream-tile__live-badge">Ao Vivo</span>
+          <span className="stream-tile__quality-badge">{stream.qualityLabel || '1080p • 60 FPS'}</span>
+          <span className="stream-tile__name">{stream.participantName}</span>
+        </div>
+        <div className="stream-tile__actions">
+          {!isSingle && (
+            <button
+              className="stream-tile__btn"
+              onClick={(e) => { e.stopPropagation(); onToggleFocus(); }}
+              title={isFocused ? 'Ver em tela dividida' : 'Focar'}
+            >
+              {isFocused ? '🗗 Dividir' : '🗖 Expandir'}
+            </button>
+          )}
+          <button
+            className="stream-tile__btn"
+            onClick={handleFullscreen}
+            title="Tela Cheia"
+          >
+            ⛶
+          </button>
+          {stream.isLocal && onStopStream && (
+            <button
+              className="stream-tile__btn stream-tile__btn--stop"
+              onClick={(e) => { e.stopPropagation(); onStopStream(); }}
+              title="Parar Transmissão"
+            >
+              Parar
+            </button>
+          )}
+        </div>
+      </div>
+      <video
+        ref={videoRef}
+        className="stream-tile__video"
+        autoPlay
+        playsInline
+        muted={stream.isLocal}
+      />
+    </div>
+  );
 }
 
 export default function StageView({
@@ -26,8 +112,8 @@ export default function StageView({
   voiceState,
   streamState,
   activeScreenTrack,
+  activeStreams = [],
   liveKitParticipants = [],
-  screenVideoRef,
   nickname,
   isMuted,
   isDeafened,
@@ -36,22 +122,33 @@ export default function StageView({
   onStartStream,
   onStopStream,
   onVoiceDisconnect,
+  onOpenStreamQuality,
 }: StageViewProps) {
-  // Efeito para vincular a track de vídeo da tela assim que o elemento estiver no DOM
-  useEffect(() => {
-    if (screenVideoRef?.current) {
-      if (activeScreenTrack) {
-        screenVideoRef.current.srcObject = new MediaStream([activeScreenTrack]);
-        screenVideoRef.current.play().catch(() => {});
-      } else {
-        screenVideoRef.current.srcObject = null;
-      }
-    }
-  }, [activeScreenTrack, screenVideoRef]);
+  const [focusedStreamId, setFocusedStreamId] = useState<string | null>(null);
+
+  // Fallback para caso activeStreams esteja vazio mas activeScreenTrack exista
+  const effectiveStreams: ActiveStream[] =
+    activeStreams.length > 0
+      ? activeStreams
+      : activeScreenTrack
+      ? [
+          {
+            participantId: streamState.streamerId || 'streamer',
+            participantName:
+              streamState.streamerId === nickname || streamState.streamerId === 'self'
+                ? `${nickname} (Você)`
+                : streamState.streamerId || 'Transmissão',
+            track: activeScreenTrack,
+            isLocal: streamState.streamerId === nickname || streamState.streamerId === 'self',
+            qualityLabel: '1080p • 60 FPS',
+          },
+        ]
+      : [];
+
+  const hasStreams = effectiveStreams.length > 0;
 
   // Lista de participantes reais na chamada
-  // Se liveKitParticipants estiver vazio, exibe o próprio usuário local
-  const displayParticipants: { id: string; name: string; isMuted: boolean; isSpeaking: boolean; isSelf: boolean }[] =
+  const displayParticipants =
     liveKitParticipants.length > 0
       ? liveKitParticipants.map((p) => {
           const isSelf = p.identity === nickname || p.identity === 'self';
@@ -82,30 +179,23 @@ export default function StageView({
     return colors[Math.abs(hash) % colors.length];
   };
 
-  const handleToggleFullscreen = () => {
-    if (screenVideoRef?.current) {
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      } else {
-        screenVideoRef.current.requestFullscreen().catch(() => {});
-      }
-    }
+  const handleToggleFocus = (id: string) => {
+    setFocusedStreamId((prev) => (prev === id ? null : id));
   };
-
-  const streamerName = streamState.streamerId === nickname || streamState.streamerId === 'self'
-    ? `${nickname} (Você)`
-    : streamState.streamerId;
 
   return (
     <div className="stage-view">
       {/* Header do Palco de Voz */}
       <div className="stage-view__header">
         <div className="stage-view__header-info">
-          {streamState.isActive ? (
+          {hasStreams ? (
             <>
               <span className="stage-view__live-badge">Ao Vivo</span>
+              <span className="stage-view__quality-pill">1080p • 60 FPS</span>
               <span className="stage-view__stream-title">
-                {streamerName ? `${streamerName} está transmitindo` : 'Transmissão de Tela'}
+                {effectiveStreams.length === 1
+                  ? `${effectiveStreams[0].participantName} transmitindo`
+                  : `${effectiveStreams.length} Transmissões simultâneas (Tela Dividida)`}
               </span>
             </>
           ) : (
@@ -120,21 +210,25 @@ export default function StageView({
         </div>
 
         <div className="stage-view__header-actions">
-          {streamState.isActive && (
-            <>
-              <button className="stage-view__btn stage-view__btn--secondary" onClick={handleToggleFullscreen} title="Tela Cheia">
-                Tela Cheia
-              </button>
-              <button className="stage-view__btn stage-view__btn--stop" onClick={onStopStream} title="Parar Transmissão">
-                Parar Transmissão
-              </button>
-            </>
+          {onOpenStreamQuality && (
+            <button
+              className="stage-view__btn stage-view__btn--secondary"
+              onClick={onOpenStreamQuality}
+              title="Configurar Resolução e FPS"
+            >
+              ⚙️ Qualidade (1080p 60fps)
+            </button>
+          )}
+          {hasStreams && effectiveStreams.some((s) => s.isLocal) && (
+            <button className="stage-view__btn stage-view__btn--stop" onClick={onStopStream} title="Parar Minha Transmissão">
+              Parar Transmissão
+            </button>
           )}
         </div>
       </div>
 
-      {/* CASO 1: Transmissão de tela ativa */}
-      {streamState.isActive ? (
+      {/* CASO 1: Transmissões ativas (1 ou mais telas simultâneas) */}
+      {hasStreams ? (
         <div className="stage-view__stream-layout">
           {/* Mini-carrossel de participantes no topo */}
           <div className="stage-view__cameras">
@@ -157,16 +251,42 @@ export default function StageView({
             ))}
           </div>
 
-          {/* Área principal do Vídeo da Tela */}
-          <div className="stage-view__main">
-            <video
-              ref={screenVideoRef}
-              className="stage-view__video"
-              autoPlay
-              playsInline
-              muted={streamState.streamerId === nickname || streamState.streamerId === 'self'}
-            />
+          {/* Grid de Transmissões (Suporte a Múltiplas Telas Simultâneas) */}
+          <div
+            className={`stage-view__streams-grid stage-view__streams-grid--${
+              effectiveStreams.length === 1 ? 'single' : focusedStreamId ? 'focused' : 'split'
+            }`}
+          >
+            {effectiveStreams.map((stream) => {
+              const isFocused = focusedStreamId === stream.participantId;
+              // Se há um stream focado e este não é ele, esconde ou renderiza miniatura
+              if (focusedStreamId && !isFocused) return null;
+
+              return (
+                <StreamTile
+                  key={stream.participantId}
+                  stream={stream}
+                  isFocused={isFocused}
+                  isSingle={effectiveStreams.length === 1}
+                  onToggleFocus={() => handleToggleFocus(stream.participantId)}
+                  onStopStream={stream.isLocal ? onStopStream : undefined}
+                />
+              );
+            })}
           </div>
+
+          {/* Se um stream estiver focado, barra inferior para restaurar tela dividida */}
+          {focusedStreamId && effectiveStreams.length > 1 && (
+            <div className="stage-view__unfocus-bar">
+              <span>Você está com zoom em uma das telas.</span>
+              <button
+                className="stage-view__btn stage-view__btn--secondary"
+                onClick={() => setFocusedStreamId(null)}
+              >
+                Restaurar Tela Dividida (Ver Ambas)
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         /* CASO 2: Sala de Voz Normal (Sem transmissão de tela) */
@@ -236,16 +356,27 @@ export default function StageView({
               </svg>
             </button>
 
-            {/* Compartilhar Tela */}
+            {/* Compartilhar Tela (1080p 60fps) */}
             <button
               className="voice-grid__ctrl-btn"
               onClick={onStartStream}
-              title="Compartilhar Tela"
+              title="Compartilhar Tela (1080p 60 FPS)"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" />
               </svg>
             </button>
+
+            {/* Engrenagem de Qualidade */}
+            {onOpenStreamQuality && (
+              <button
+                className="voice-grid__ctrl-btn"
+                onClick={onOpenStreamQuality}
+                title="Configurar Resolução e FPS da Transmissão"
+              >
+                ⚙️
+              </button>
+            )}
 
             {/* Desconectar Chamada */}
             {voiceState.isConnected && (

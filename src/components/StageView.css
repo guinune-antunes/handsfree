@@ -440,3 +440,192 @@
   transform: scale(1.08);
 }
 
+/* --- Quality Pill in Header --- */
+.stage-view__quality-pill {
+  padding: 2px 8px;
+  background: #23a55a;
+  border-radius: var(--radius-sm, 4px);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --- Multi-Stream Split Grid --- */
+.stage-view__stream-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+.stage-view__streams-grid {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Single stream: takes 100% */
+.stage-view__streams-grid--single {
+  display: flex;
+}
+
+/* Two streams side-by-side: 50% / 50% split */
+.stage-view__streams-grid--split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+}
+
+@media (max-width: 900px) {
+  .stage-view__streams-grid--split {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
+.stage-view__streams-grid--focused {
+  display: flex;
+}
+
+/* --- Stream Tile --- */
+.stream-tile {
+  position: relative;
+  background: #111214;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.stream-tile--single {
+  cursor: default;
+}
+
+.stream-tile:hover:not(.stream-tile--single) {
+  border-color: #5865f2;
+}
+
+.stream-tile--focused {
+  border-color: #23a55a;
+}
+
+.stream-tile__overlay-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.stream-tile:hover .stream-tile__overlay-header {
+  opacity: 1;
+}
+
+.stream-tile__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stream-tile__live-badge {
+  padding: 2px 6px;
+  background: #ed4245;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.stream-tile__quality-badge {
+  padding: 2px 6px;
+  background: #23a55a;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.stream-tile__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.stream-tile__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stream-tile__btn {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.stream-tile__btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.stream-tile__btn--stop {
+  background: #ed4245;
+  border-color: #ed4245;
+  font-weight: 600;
+}
+
+.stream-tile__btn--stop:hover {
+  background: #da373c;
+}
+
+.stream-tile__video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.stage-view__unfocus-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #1e1f22;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.85rem;
+  color: #949ba4;
+}
+
+
