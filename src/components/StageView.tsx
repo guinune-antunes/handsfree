@@ -39,10 +39,23 @@ function StreamTile({
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current && stream.track) {
-      videoRef.current.srcObject = new MediaStream([stream.track]);
-      videoRef.current.play().catch(() => {});
+    const video = videoRef.current;
+    if (!video || !stream.track) return;
+
+    try {
+      const mediaStream = new MediaStream([stream.track]);
+      video.srcObject = mediaStream;
+      video.muted = true;
+      video.play().catch((err) => {
+        console.warn('[StageView] Autoplay error, retrying:', err);
+      });
+    } catch (e) {
+      console.error('[StageView] Failed to bind track:', e);
     }
+
+    return () => {
+      if (video) video.srcObject = null;
+    };
   }, [stream.track]);
 
   const handleFullscreen = (e: React.MouseEvent) => {
@@ -101,7 +114,7 @@ function StreamTile({
         className="stream-tile__video"
         autoPlay
         playsInline
-        muted={stream.isLocal}
+        muted
       />
     </div>
   );

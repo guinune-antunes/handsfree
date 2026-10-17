@@ -51,6 +51,7 @@ export interface UseLiveKitReturn {
 export function useLiveKit(): UseLiveKitReturn {
   const roomRef = useRef<Room | null>(null);
   const audioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
+  const remoteScreenTracksRef = useRef<Map<string, MediaStreamTrack>>(new Map());
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const [voiceState, setVoiceState] = useState<VoiceState>({
@@ -130,19 +131,35 @@ export function useLiveKit(): UseLiveKitReturn {
       }
     }
 
-    // 2. Remote participants screen share
+    // 2. Remote participant screen shares from ref (directly subscribed tracks)
+    remoteScreenTracksRef.current.forEach((mediaTrack, participantId) => {
+      const participant = room.remoteParticipants.get(participantId);
+      const name = participant ? (participant.name || participant.identity) : participantId;
+      streams.push({
+        participantId,
+        participantName: name,
+        track: mediaTrack,
+        isLocal: false,
+        qualityLabel: '1080p • 60 FPS',
+      });
+    });
+
+    // 3. Fallback: inspect remoteParticipants trackPublications
     room.remoteParticipants.forEach((participant) => {
-      const remoteScreenPub = Array.from(participant.trackPublications.values()).find(
-        (pub) => pub.source === Track.Source.ScreenShare && pub.track
-      );
-      if (remoteScreenPub && remoteScreenPub.track) {
-        streams.push({
-          participantId: participant.identity,
-          participantName: participant.name || participant.identity,
-          track: remoteScreenPub.track.mediaStreamTrack,
-          isLocal: false,
-          qualityLabel: '1080p • 60 FPS',
-        });
+      if (!remoteScreenTracksRef.current.has(participant.identity)) {
+        const screenPub = Array.from(participant.trackPublications.values()).find(
+          (pub) => pub.source === Track.Source.ScreenShare && pub.track
+        );
+        if (screenPub && screenPub.track) {
+          remoteScreenTracksRef.current.set(participant.identity, screenPub.track.mediaStreamTrack);
+          streams.push({
+            participantId: participant.identity,
+            participantName: participant.name || participant.identity,
+            track: screenPub.track.mediaStreamTrack,
+            isLocal: false,
+            qualityLabel: '1080p • 60 FPS',
+          });
+        }
       }
     });
 
@@ -215,14 +232,13 @@ export function useLiveKit(): UseLiveKitReturn {
       room.localParticipant.setScreenShareEnabled(false).catch(() => {});
     }
 
-    // Refresh streams immediately
     setTimeout(() => {
       updateStreams();
       updateParticipants();
     }, 100);
   }, [updateStreams, updateParticipants]);
 
-  // --- Start screen share (1080p 60fps & custom preset support) ---
+  // --- Start screen share (1080p 60fps & motion preset support) ---
   const startScreenShare = useCallback(async (customPreset?: StreamQualityPreset) => {
     const room = roomRef.current;
     if (!room || !room.localParticipant) return;
@@ -241,11 +257,11 @@ export function useLiveKit(): UseLiveKitReturn {
             height: preset.height,
             frameRate: preset.fps,
           },
-          contentHint: 'motion', // Prioritizes smooth 60fps motion for games and desktop
+          contentHint: 'motion',
         },
         {
-          simulcast: false, // Prevents LiveKit from dropping to 360p
-          degradationPreference: 'maintain-framerate', // Never sacrifice 60 FPS
+          simulcast: false,
+          degradationPreference: 'maintain-framerate',
           screenShareEncoding: {
             maxBitrate: preset.bitrate,
             maxFramerate: preset.fps,
@@ -256,7 +272,6 @@ export function useLiveKit(): UseLiveKitReturn {
 
       const track = pub?.track?.mediaStreamTrack;
       if (track) {
-        // Enforce motion content hint directly on WebRTC track
         if ('contentHint' in track) {
           track.contentHint = 'motion';
         }
@@ -280,10 +295,12 @@ export function useLiveKit(): UseLiveKitReturn {
       roomRef.current = null;
     }
 
-    // CRUCIAL: Disable adaptiveStream and dynacast so LiveKit does NOT throttle or drop to 360p/720p!
+    remoteScreenTracksRef.current.clear();
+
     const room = new Room({
       adaptiveStream: false,
       dynacast: false,
+      stopLocalTrackOnUnpublish: true,
       videoCaptureDefaults: {
         resolution: {
           width: 1920,
@@ -295,7 +312,7 @@ export function useLiveKit(): UseLiveKitReturn {
         simulcast: false,
         degradationPreference: 'maintain-framerate',
         screenShareEncoding: {
-          maxBitrate: 8_000_000,
+          maxBitrate: 4_500_000,
           maxFramerate: 60,
           priority: 'high',
         },
@@ -322,6 +339,7 @@ export function useLiveKit(): UseLiveKitReturn {
           isMuted: false,
           isDeafened: false,
         });
+        remoteScreenTracksRef.current.clear();
         setActiveScreenTrack(null);
         setActiveStreams([]);
         setStreamState({ isActive: false, streamerId: null, type: null });
@@ -331,18 +349,21 @@ export function useLiveKit(): UseLiveKitReturn {
 
     room.on(RoomEvent.ParticipantConnected, () => updateParticipants());
     room.on(RoomEvent.ParticipantDisconnected, (participant: RemoteParticipant) => {
-      // Clean up audio element
       const audioEl = audioElementsRef.current.get(participant.identity);
       if (audioEl) {
         audioEl.srcObject = null;
         audioElementsRef.current.delete(participant.identity);
       }
+      remoteScreenTracksRef.current.delete(participant.identity);
       updateParticipants();
     });
 
     room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+      console.log(`[LiveKit] TrackSubscribed: source=${track.source} from=${participant.identity}`);
       if (track.source === Track.Source.Microphone) {
         attachRemoteAudio(participant, publication);
+      } else if (track.source === Track.Source.ScreenShare) {
+        remoteScreenTracksRef.current.set(participant.identity, track.mediaStreamTrack);
       }
       updateParticipants();
     });
@@ -354,6 +375,8 @@ export function useLiveKit(): UseLiveKitReturn {
           audioEl.srcObject = null;
           audioElementsRef.current.delete(_participant.identity);
         }
+      } else if (publication.source === Track.Source.ScreenShare) {
+        remoteScreenTracksRef.current.delete(_participant.identity);
       }
       updateParticipants();
     });
@@ -382,7 +405,6 @@ export function useLiveKit(): UseLiveKitReturn {
     // --- Connect ---
     try {
       await room.connect(url, token);
-      // Enable microphone after connecting
       await room.localParticipant.setMicrophoneEnabled(true);
       updateParticipants();
     } catch (error) {
@@ -398,11 +420,11 @@ export function useLiveKit(): UseLiveKitReturn {
       roomRef.current.disconnect();
       roomRef.current = null;
     }
-    // Clean up all audio elements
     audioElementsRef.current.forEach((audioEl) => {
       audioEl.srcObject = null;
     });
     audioElementsRef.current.clear();
+    remoteScreenTracksRef.current.clear();
 
     setVoiceState({
       isConnected: false,
@@ -435,12 +457,10 @@ export function useLiveKit(): UseLiveKitReturn {
     setIsDeafened(newDeafened);
     setVoiceState((prev) => ({ ...prev, isDeafened: newDeafened }));
 
-    // Mute/unmute all remote audio elements
     audioElementsRef.current.forEach((audioEl) => {
       audioEl.muted = newDeafened;
     });
 
-    // If deafening, also mute microphone
     if (newDeafened && roomRef.current) {
       roomRef.current.localParticipant.setMicrophoneEnabled(false);
       setVoiceState((prev) => ({ ...prev, isMuted: true, isDeafened: true }));
@@ -455,6 +475,7 @@ export function useLiveKit(): UseLiveKitReturn {
       }
       audioElementsRef.current.forEach((el) => { el.srcObject = null; });
       audioElementsRef.current.clear();
+      remoteScreenTracksRef.current.clear();
     };
   }, []);
 
