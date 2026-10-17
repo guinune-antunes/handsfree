@@ -15,6 +15,24 @@ Basta dar um duplo clique no arquivo **`Instalador-Discord-Clone.exe`**!
 
 ---
 
+### 🔍 Resolução de Problemas e Diagnóstico Sem Lacunas
+Se encontrar qualquer problema de inicialização, atalho ou rede, basta dar um duplo clique em:
+👉 **`diagnostico.bat`**
+
+O script analisa automaticamente 10 camadas do sistema:
+1. Versão e arquitetura do Windows
+2. Runtime Microsoft Edge WebView2
+3. Permissões de escrita e integridade dos arquivos
+4. Hash SHA256 do executável e integridade dos pacotes
+5. Atalho da Área de Trabalho e seus caminhos
+6. Processos concorrentes ou bloqueios de arquivo
+7. Arquivos de configuração salvos
+8. Teste de conectividade real com o servidor (Porta 7880 SFU e 3001 Token Server)
+9. Histórico de falhas e crashes no Visualizador de Eventos do Windows
+10. Geração e abertura automática do relatório `DIAGNOSTICO_DISCORD_CLONE.txt`
+
+---
+
 ### Opção 2: Compilar a partir do Código Fonte (Desenvolvedores)
 1. Instale as dependências: `npm install`
 2. Compile o aplicativo: `npm run tauri build`

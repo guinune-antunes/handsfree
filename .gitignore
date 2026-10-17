@@ -27,3 +27,5 @@ dist-ssr
 target/
 src-tauri/target/
 discord-clone-leve/
+DIAGNOSTICO_DISCORD_CLONE.txt
+
