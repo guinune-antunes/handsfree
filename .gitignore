@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Build outputs & legacy folders
+target/
+src-tauri/target/
+discord-clone-leve/
