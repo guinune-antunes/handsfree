@@ -6,16 +6,19 @@ Aplicativo nativo leve para Windows com chat de texto, canais de voz de baixa la
 
 ## 🚀 Instalação Rápida no Computador do Cliente
 
-### Opção 1: Instalador Automático em 1 Clique (Recomendado)
-1. Dê um duplo clique no arquivo **`instalar-cliente.bat`**.
-2. O script irá:
-   - Instalar dependências npm (`npm install`);
-   - Compilar o executável nativo otimizado (`npm run tauri build`);
-   - **Criar automaticamente o atalho "Discord Clone Leve" na sua Área de Trabalho** com o ícone oficial!
+### ⚡ Opção 1: Instalador Executável Standalone (Recomendado)
+Basta dar um duplo clique no arquivo **`Instalador-Discord-Clone.exe`**!
+- ✅ **Não precisa instalar Node.js, Rust nem Git**;
+- 🎨 Interface visual animada durante a instalação;
+- 📌 Cria automaticamente o atalho oficial **"Discord Clone Leve"** na sua Área de Trabalho;
+- 🚀 Inicia o aplicativo diretamente após a instalação.
 
-### Opção 2: Criar Apenas o Atalho (Se já compilado ou portátil)
-1. Dê um duplo clique no arquivo **`criar-atalho.bat`**.
-2. O atalho apontando para o executável será criado na Área de Trabalho imediatamente.
+---
+
+### Opção 2: Compilar a partir do Código Fonte (Desenvolvedores)
+1. Instale as dependências: `npm install`
+2. Compile o aplicativo: `npm run tauri build`
+3. Execute `criar-atalho.bat` para gerar o atalho no Desktop.
 
 ---
 
