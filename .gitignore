@@ -4,7 +4,9 @@ dist/
 target/
 src-tauri/
 .env
+livekit.yaml
 discord-clone-leve/
 *.log
 DIAGNOSTICO_DISCORD_CLONE.txt
+
 
