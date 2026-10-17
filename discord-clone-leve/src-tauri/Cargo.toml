@@ -14,6 +14,10 @@ edition = "2021"
 name = "discord_clone_leve_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[[bin]]
+name = "discord-clone-leve"
+path = "src/main.rs"
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
