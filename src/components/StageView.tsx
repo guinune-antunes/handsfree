@@ -212,7 +212,7 @@ export default function StageView({
   const displayParticipants =
     liveKitParticipants.length > 0
       ? liveKitParticipants.map((p) => {
-          const isSelf = p.identity === nickname || p.identity === 'self';
+          const isSelf = p.isLocal ?? (p.identity === nickname || p.identity === 'self');
           return {
             id: p.identity,
             name: isSelf ? `${nickname} (Você)` : p.name || p.identity,

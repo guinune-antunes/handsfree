@@ -10,6 +10,7 @@ import {
   RemoteParticipant,
   RemoteTrackPublication,
   ConnectionState,
+  DisconnectReason,
   type Participant,
 } from 'livekit-client';
 import type { VoiceState, StreamState, ActiveStream, StreamQualityPreset } from '../types';
@@ -18,6 +19,7 @@ import { DEFAULT_STREAM_PRESET } from '../config/streamQuality';
 export interface LiveKitParticipant {
   identity: string;
   name: string;
+  isLocal?: boolean;
   isMuted: boolean;
   isSpeaking: boolean;
   audioTrack?: MediaStreamTrack;
@@ -115,9 +117,11 @@ export function useLiveKit(): UseLiveKitReturn {
       }
     }
 
+    const isLocal = participant === roomRef.current?.localParticipant;
     return {
       identity: participant.identity,
       name: participant.name || participant.identity,
+      isLocal,
       isMuted: participant.isMicrophoneEnabled === false,
       isSpeaking: participant.isSpeaking,
       audioTrack,
@@ -372,6 +376,10 @@ export function useLiveKit(): UseLiveKitReturn {
       }
     });
 
+    room.on(RoomEvent.Disconnected, (reason?: DisconnectReason) => {
+      console.warn(`[LiveKit] Room disconnected! Reason: ${reason}`);
+    });
+
     room.on(RoomEvent.ParticipantConnected, () => updateParticipants());
     room.on(RoomEvent.ParticipantDisconnected, (participant: RemoteParticipant) => {
       const audioEl = audioElementsRef.current.get(participant.identity);
@@ -443,11 +451,31 @@ export function useLiveKit(): UseLiveKitReturn {
 
     // --- Connect ---
     try {
-      await room.connect(url, token);
-      await room.localParticipant.setMicrophoneEnabled(true);
+      console.log(`[LiveKit] Conectando a ${url}...`);
+      await room.connect(url, token, {
+        autoSubscribe: true,
+        maxRetries: 3,
+        rtcConfig: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+          ],
+        },
+      });
+      console.log('[LiveKit] Conectado à sala com sucesso!');
+
+      // Tenta ativar o microfone, mas NUNCA desconecta o usuário se o dispositivo falhar ou a permissão for negada
+      try {
+        await room.localParticipant.setMicrophoneEnabled(true);
+      } catch (micErr) {
+        console.warn('[LiveKit] Microfone não ativado automaticamente (sem microfone ou permissão negada):', micErr);
+        setVoiceState((prev) => ({ ...prev, isMuted: true }));
+      }
+
       updateParticipants();
     } catch (error) {
-      console.error('[LiveKit] Connection failed:', error);
+      console.error('[LiveKit] Falha na conexão:', error);
       roomRef.current = null;
       throw error;
     }

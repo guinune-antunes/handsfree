@@ -42,7 +42,7 @@ function App() {
     ];
 
     liveKit.participants.forEach((p) => {
-      if (p.identity !== config.nickname && p.identity !== 'self') {
+      if (!p.isLocal && p.identity !== config.nickname && p.identity !== 'self') {
         list.push({
           id: p.identity,
           name: p.name || p.identity,
@@ -66,7 +66,7 @@ function App() {
         if (ch.type === 'voice') {
           if (liveKit.voiceState.isConnected && ch.id === liveKit.voiceState.channelId) {
             const remoteIds = liveKit.participants
-              .filter((p) => p.identity !== config.nickname && p.identity !== 'self')
+              .filter((p) => !p.isLocal && p.identity !== config.nickname && p.identity !== 'self')
               .map((p) => p.identity);
             return {
               ...ch,
@@ -120,14 +120,23 @@ function App() {
       try {
         await liveKit.connectToRoom(livekitUrl, token, channelId);
         console.log('[App] Conectado ao LiveKit!');
-      } catch (lkErr) {
-        const msg = `Não foi possível conectar ao LiveKit em ${livekitUrl}. Verifique se o servidor está rodando.`;
+      } catch (lkErr: any) {
+        const errorMsg = lkErr?.message || String(lkErr);
         console.error('[App] Falha na conexão LiveKit:', lkErr);
-        alert(msg);
+
+        let details = `Não foi possível manter a conexão com o LiveKit em ${livekitUrl}.\n\nDetalhes: ${errorMsg}`;
+        if (
+          errorMsg.toLowerCase().includes('ice') ||
+          errorMsg.toLowerCase().includes('timeout') ||
+          errorMsg.toLowerCase().includes('peer')
+        ) {
+          details += '\n\n⚠️ Causa provável: As portas de mídia WebRTC (UDP 50000-60000 ou TCP 7881) estão bloqueadas pelo roteador do servidor ou pelo firewall/provedor deste usuário.';
+        }
+        alert(details);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('[App] Erro inesperado ao conectar voz:', error);
-      alert('Erro inesperado ao conectar ao canal de voz.');
+      alert(`Erro inesperado ao conectar ao canal de voz: ${error?.message || error}`);
     }
   }, [config, liveKit]);
 
