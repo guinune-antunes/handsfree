@@ -8,10 +8,10 @@ rtc:
   tcp_port: 7881
   port_range_start: 50000
   port_range_end: 60000
-  # IMPORTANTE: Substitua pelo seu IP público
-  # Para descobrir: curl -4 ifconfig.me
-  node_ip: COLOQUE_SEU_IP_PUBLICO_AQUI
+  # IP publico descoberto automaticamente via STUN
   use_external_ip: true
+  # CRUCIAL: Permite conexoes locais (mesma rede/LAN) e conexoes externas (Internet) simultaneamente!
+  enable_loopback_candidate: true
 
 redis:
   address: 127.0.0.1:6379

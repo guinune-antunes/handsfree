@@ -55,7 +55,12 @@ else
 fi
 
 # 4. Atualizar livekit.yaml
-echo -e "\n${YELLOW}[3/4] Configurando livekit.yaml...${NC}"
+echo -e "\n${YELLOW}[3/4] Configurando livekit.yaml e otimizando buffers...${NC}"
+
+# Otimizar buffers UDP do kernel para suportar streams 1080p 60fps sem perda de pacotes
+sysctl -w net.core.rmem_max=2500000 2>/dev/null || true
+sysctl -w net.core.wmem_max=2500000 2>/dev/null || true
+
 cat <<EOF > livekit.yaml
 # LiveKit Server Configuration — Gerado por setup.sh
 port: 7880
@@ -65,8 +70,8 @@ rtc:
   tcp_port: 7881
   port_range_start: 50000
   port_range_end: 60000
-  node_ip: ${SERVER_IP}
   use_external_ip: true
+  enable_loopback_candidate: true
 
 redis:
   address: 127.0.0.1:6379
