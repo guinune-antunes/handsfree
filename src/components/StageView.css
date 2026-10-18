@@ -73,6 +73,15 @@
   background: var(--red-hover);
 }
 
+.stage-view__btn--primary {
+  background: var(--green, #23a55a);
+  color: #ffffff;
+}
+
+.stage-view__btn--primary:hover {
+  background: #1b8748;
+}
+
 .stage-view__btn--secondary {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-normal);

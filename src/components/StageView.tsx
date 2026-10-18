@@ -8,6 +8,7 @@ interface StageViewProps {
   channelName?: string;
   voiceState: VoiceState;
   streamState: StreamState;
+  isLocalStreaming?: boolean;
   activeScreenTrack?: MediaStreamTrack | null;
   activeStreams?: ActiveStream[];
   liveKitParticipants?: LiveKitParticipant[];
@@ -124,6 +125,7 @@ export default function StageView({
   channelName = 'Canal de Voz',
   voiceState,
   streamState,
+  isLocalStreaming = false,
   activeScreenTrack,
   activeStreams = [],
   liveKitParticipants = [],
@@ -232,10 +234,20 @@ export default function StageView({
               ⚙️ Qualidade (1080p 60fps)
             </button>
           )}
-          {hasStreams && effectiveStreams.some((s) => s.isLocal) && (
+          {hasStreams && (isLocalStreaming || effectiveStreams.some((s) => s.isLocal)) ? (
             <button className="stage-view__btn stage-view__btn--stop" onClick={onStopStream} title="Parar Minha Transmissão">
               Parar Transmissão
             </button>
+          ) : (
+            hasStreams && onStartStream && (
+              <button
+                className="stage-view__btn stage-view__btn--primary"
+                onClick={onStartStream}
+                title="Compartilhar sua tela simultaneamente com os outros participantes"
+              >
+                📺 Compartilhar Minha Tela
+              </button>
+            )
           )}
         </div>
       </div>

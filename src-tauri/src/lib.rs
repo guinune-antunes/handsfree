@@ -79,6 +79,16 @@ async fn load_config() -> Result<Option<AppConfig>, String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Ativa aceleração de hardware completa no WebView2:
+    // - DirectComposition hardware overlays (vídeo direto para hardware sem repintura 3D na GPU)
+    // - Zero-copy de decodificação WebRTC para textura GPU
+    // - Rasterização via GPU para toda a interface
+    // Reduz drasticamente uso de CPU e GPU durante transmissões 1080p 60fps
+    std::env::set_var(
+        "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
+        "--enable-features=VaapiVideoDecoder,PlatformHEVCDecoderSupport --enable-gpu-rasterization --enable-zero-copy --ignore-gpu-blocklist --enable-hardware-overlays --enable-accelerated-video-decode",
+    );
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![

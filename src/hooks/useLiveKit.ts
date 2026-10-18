@@ -31,6 +31,7 @@ export interface UseLiveKitReturn {
   streamState: StreamState;
   participants: LiveKitParticipant[];
   activeStreams: ActiveStream[];
+  isLocalStreaming: boolean;
   streamPreset: StreamQualityPreset;
   connectionState: ConnectionState | 'disconnected';
   activeScreenTrack: MediaStreamTrack | null;
@@ -260,6 +261,7 @@ export function useLiveKit(): UseLiveKitReturn {
           contentHint: 'motion',
         },
         {
+          videoCodec: 'h264',
           simulcast: false,
           degradationPreference: 'maintain-framerate',
           screenShareEncoding: {
@@ -309,6 +311,7 @@ export function useLiveKit(): UseLiveKitReturn {
         },
       },
       publishDefaults: {
+        videoCodec: 'h264',
         simulcast: false,
         degradationPreference: 'maintain-framerate',
         screenShareEncoding: {
@@ -377,6 +380,13 @@ export function useLiveKit(): UseLiveKitReturn {
         }
       } else if (publication.source === Track.Source.ScreenShare) {
         remoteScreenTracksRef.current.delete(_participant.identity);
+      }
+      updateParticipants();
+    });
+
+    room.on(RoomEvent.TrackUnpublished, (publication, participant) => {
+      if (publication.source === Track.Source.ScreenShare) {
+        remoteScreenTracksRef.current.delete(participant.identity);
       }
       updateParticipants();
     });
@@ -479,11 +489,14 @@ export function useLiveKit(): UseLiveKitReturn {
     };
   }, []);
 
+  const isLocalStreaming = activeStreams.some((s) => s.isLocal);
+
   return {
     voiceState,
     streamState,
     participants,
     activeStreams,
+    isLocalStreaming,
     streamPreset,
     connectionState,
     activeScreenTrack,

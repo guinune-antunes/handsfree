@@ -36,7 +36,7 @@ function App() {
         status: 'online',
         isMuted: liveKit.voiceState.isMuted,
         isDeafened: liveKit.voiceState.isDeafened,
-        isStreaming: liveKit.streamState.isActive,
+        isStreaming: liveKit.isLocalStreaming,
       },
     ];
 
@@ -55,7 +55,7 @@ function App() {
     });
 
     return list;
-  }, [config.nickname, liveKit.voiceState.isMuted, liveKit.voiceState.isDeafened, liveKit.streamState.isActive, liveKit.participants]);
+  }, [config.nickname, liveKit.voiceState.isMuted, liveKit.voiceState.isDeafened, liveKit.isLocalStreaming, liveKit.participants]);
 
   // Sincroniza os membros conectados aos canais de voz dinamicamente
   useEffect(() => {
@@ -178,6 +178,7 @@ function App() {
           currentChannelId={currentChannelId}
           voiceState={liveKit.voiceState}
           streamState={liveKit.streamState}
+          isLocalStreaming={liveKit.isLocalStreaming}
           activeScreenTrack={liveKit.activeScreenTrack}
           activeStreams={liveKit.activeStreams}
           isMuted={liveKit.voiceState.isMuted}
@@ -206,7 +207,7 @@ function App() {
       <StreamQualityModal
         isOpen={qualityModalOpen}
         currentPreset={liveKit.streamPreset}
-        isStreaming={liveKit.streamState.isActive}
+        isStreaming={liveKit.isLocalStreaming}
         onClose={() => setQualityModalOpen(false)}
         onSelectPreset={(preset) => liveKit.setStreamPreset(preset)}
         onStartStreamWithPreset={(preset) => liveKit.startScreenShare(preset)}

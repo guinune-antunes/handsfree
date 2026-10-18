@@ -16,6 +16,7 @@ interface DashboardProps {
   currentChannelId: string;
   voiceState: VoiceState;
   streamState: StreamState;
+  isLocalStreaming?: boolean;
   activeScreenTrack?: MediaStreamTrack | null;
   activeStreams?: ActiveStream[];
   isMuted: boolean;
@@ -42,6 +43,7 @@ export default function Dashboard({
   currentChannelId,
   voiceState,
   streamState,
+  isLocalStreaming = false,
   activeScreenTrack,
   activeStreams,
   isMuted,
@@ -85,7 +87,7 @@ export default function Dashboard({
           isMuted={isMuted}
           isDeafened={isDeafened}
           isVoiceConnected={voiceState.isConnected}
-          isStreaming={streamState.isActive}
+          isStreaming={isLocalStreaming}
           onToggleMute={onToggleMute}
           onToggleDeafen={onToggleDeafen}
           onOpenSettings={onOpenSettings}
@@ -101,6 +103,7 @@ export default function Dashboard({
             channelName={currentChannel?.name || 'Canal de Voz'}
             voiceState={voiceState}
             streamState={streamState}
+            isLocalStreaming={isLocalStreaming}
             activeScreenTrack={activeScreenTrack}
             activeStreams={activeStreams}
             onStopStream={onStopStream}
