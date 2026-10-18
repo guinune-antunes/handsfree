@@ -17,6 +17,7 @@ interface DashboardProps {
   voiceState: VoiceState;
   streamState: StreamState;
   isLocalStreaming?: boolean;
+  isCameraEnabled?: boolean;
   activeScreenTrack?: MediaStreamTrack | null;
   activeStreams?: ActiveStream[];
   isMuted: boolean;
@@ -27,6 +28,7 @@ interface DashboardProps {
   onSendMessage: (content: string) => void;
   onToggleMute: () => void;
   onToggleDeafen: () => void;
+  onToggleCamera?: () => void;
   onOpenSettings: () => void;
   onStartStream: () => void;
   onStopStream: () => void;
@@ -44,6 +46,7 @@ export default function Dashboard({
   voiceState,
   streamState,
   isLocalStreaming = false,
+  isCameraEnabled = false,
   activeScreenTrack,
   activeStreams,
   isMuted,
@@ -54,6 +57,7 @@ export default function Dashboard({
   onSendMessage,
   onToggleMute,
   onToggleDeafen,
+  onToggleCamera,
   onOpenSettings,
   onStartStream,
   onStopStream,
@@ -88,8 +92,10 @@ export default function Dashboard({
           isDeafened={isDeafened}
           isVoiceConnected={voiceState.isConnected}
           isStreaming={isLocalStreaming}
+          isCameraEnabled={isCameraEnabled}
           onToggleMute={onToggleMute}
           onToggleDeafen={onToggleDeafen}
+          onToggleCamera={onToggleCamera}
           onOpenSettings={onOpenSettings}
           onStartStream={onStartStream}
           onStopStream={onStopStream}
@@ -104,6 +110,7 @@ export default function Dashboard({
             voiceState={voiceState}
             streamState={streamState}
             isLocalStreaming={isLocalStreaming}
+            isCameraEnabled={isCameraEnabled}
             activeScreenTrack={activeScreenTrack}
             activeStreams={activeStreams}
             onStopStream={onStopStream}
@@ -111,6 +118,7 @@ export default function Dashboard({
             onOpenStreamQuality={onOpenStreamQuality}
             onToggleMute={onToggleMute}
             onToggleDeafen={onToggleDeafen}
+            onToggleCamera={onToggleCamera}
             onVoiceDisconnect={onVoiceDisconnect}
             liveKitParticipants={liveKitParticipants}
             screenVideoRef={screenVideoRef}

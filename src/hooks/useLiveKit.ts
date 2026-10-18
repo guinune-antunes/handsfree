@@ -32,6 +32,7 @@ export interface UseLiveKitReturn {
   participants: LiveKitParticipant[];
   activeStreams: ActiveStream[];
   isLocalStreaming: boolean;
+  isCameraEnabled: boolean;
   streamPreset: StreamQualityPreset;
   connectionState: ConnectionState | 'disconnected';
   activeScreenTrack: MediaStreamTrack | null;
@@ -41,6 +42,7 @@ export interface UseLiveKitReturn {
   disconnect: () => void;
   toggleMute: () => Promise<void>;
   toggleDeafen: () => void;
+  toggleCamera: () => Promise<void>;
   startScreenShare: (preset?: StreamQualityPreset) => Promise<void>;
   stopScreenShare: () => void;
   setStreamPreset: (preset: StreamQualityPreset) => void;
@@ -53,6 +55,8 @@ export function useLiveKit(): UseLiveKitReturn {
   const roomRef = useRef<Room | null>(null);
   const audioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
   const remoteScreenTracksRef = useRef<Map<string, MediaStreamTrack>>(new Map());
+  const remoteCameraTracksRef = useRef<Map<string, MediaStreamTrack>>(new Map());
+  const localCameraTrackRef = useRef<MediaStreamTrack | null>(null);
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const [voiceState, setVoiceState] = useState<VoiceState>({
@@ -74,6 +78,7 @@ export function useLiveKit(): UseLiveKitReturn {
   const [participants, setParticipants] = useState<LiveKitParticipant[]>([]);
   const [connectionState, setConnectionState] = useState<ConnectionState | 'disconnected'>('disconnected');
   const [isDeafened, setIsDeafened] = useState(false);
+  const [isCameraEnabled, setIsCameraEnabled] = useState(false);
 
   // --- Helper: extract participant info ---
   const extractParticipantInfo = useCallback((participant: Participant): LiveKitParticipant => {
@@ -92,6 +97,23 @@ export function useLiveKit(): UseLiveKitReturn {
         screenTrack = track.mediaStreamTrack;
       }
     });
+
+    // Fallbacks para garantir que tracks de câmera ou tela não sejam perdidos
+    if (!videoTrack) {
+      const remoteCam = remoteCameraTracksRef.current.get(participant.identity);
+      if (remoteCam) {
+        videoTrack = remoteCam;
+      } else if (participant === roomRef.current?.localParticipant && localCameraTrackRef.current) {
+        videoTrack = localCameraTrackRef.current;
+      }
+    }
+
+    if (!screenTrack) {
+      const remoteScreen = remoteScreenTracksRef.current.get(participant.identity);
+      if (remoteScreen) {
+        screenTrack = remoteScreen;
+      }
+    }
 
     return {
       identity: participant.identity,
@@ -358,6 +380,7 @@ export function useLiveKit(): UseLiveKitReturn {
         audioElementsRef.current.delete(participant.identity);
       }
       remoteScreenTracksRef.current.delete(participant.identity);
+      remoteCameraTracksRef.current.delete(participant.identity);
       updateParticipants();
     });
 
@@ -367,6 +390,8 @@ export function useLiveKit(): UseLiveKitReturn {
         attachRemoteAudio(participant, publication);
       } else if (track.source === Track.Source.ScreenShare) {
         remoteScreenTracksRef.current.set(participant.identity, track.mediaStreamTrack);
+      } else if (track.source === Track.Source.Camera) {
+        remoteCameraTracksRef.current.set(participant.identity, track.mediaStreamTrack);
       }
       updateParticipants();
     });
@@ -380,6 +405,8 @@ export function useLiveKit(): UseLiveKitReturn {
         }
       } else if (publication.source === Track.Source.ScreenShare) {
         remoteScreenTracksRef.current.delete(_participant.identity);
+      } else if (publication.source === Track.Source.Camera) {
+        remoteCameraTracksRef.current.delete(_participant.identity);
       }
       updateParticipants();
     });
@@ -387,6 +414,8 @@ export function useLiveKit(): UseLiveKitReturn {
     room.on(RoomEvent.TrackUnpublished, (publication, participant) => {
       if (publication.source === Track.Source.ScreenShare) {
         remoteScreenTracksRef.current.delete(participant.identity);
+      } else if (publication.source === Track.Source.Camera) {
+        remoteCameraTracksRef.current.delete(participant.identity);
       }
       updateParticipants();
     });
@@ -435,6 +464,8 @@ export function useLiveKit(): UseLiveKitReturn {
     });
     audioElementsRef.current.clear();
     remoteScreenTracksRef.current.clear();
+    remoteCameraTracksRef.current.clear();
+    localCameraTrackRef.current = null;
 
     setVoiceState({
       isConnected: false,
@@ -448,6 +479,7 @@ export function useLiveKit(): UseLiveKitReturn {
     setParticipants([]);
     setConnectionState('disconnected');
     setIsDeafened(false);
+    setIsCameraEnabled(false);
   }, []);
 
   // --- Toggle mute ---
@@ -477,6 +509,49 @@ export function useLiveKit(): UseLiveKitReturn {
     }
   }, [isDeafened]);
 
+  // --- Toggle camera ---
+  const toggleCamera = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room || !room.localParticipant) {
+      console.warn('[LiveKit] Cannot toggle camera: room not connected');
+      return;
+    }
+
+    try {
+      const willEnable = !isCameraEnabled;
+      if (willEnable) {
+        console.log('[LiveKit] Enabling local camera (H.264 720p 30fps)...');
+        const pub = await room.localParticipant.setCameraEnabled(
+          true,
+          {
+            resolution: {
+              width: 1280,
+              height: 720,
+              frameRate: 30,
+            },
+          },
+          {
+            videoCodec: 'h264',
+            simulcast: false,
+          }
+        );
+        if (pub && pub.track) {
+          localCameraTrackRef.current = pub.track.mediaStreamTrack;
+        }
+        setIsCameraEnabled(true);
+      } else {
+        console.log('[LiveKit] Disabling local camera...');
+        await room.localParticipant.setCameraEnabled(false);
+        localCameraTrackRef.current = null;
+        setIsCameraEnabled(false);
+      }
+      updateParticipants();
+    } catch (err) {
+      console.error('[LiveKit] Failed to toggle camera:', err);
+      alert('Não foi possível acessar a câmera. Verifique se ela está conectada e se a permissão foi concedida.');
+    }
+  }, [isCameraEnabled, updateParticipants]);
+
   // --- Cleanup on unmount ---
   useEffect(() => {
     return () => {
@@ -486,6 +561,8 @@ export function useLiveKit(): UseLiveKitReturn {
       audioElementsRef.current.forEach((el) => { el.srcObject = null; });
       audioElementsRef.current.clear();
       remoteScreenTracksRef.current.clear();
+      remoteCameraTracksRef.current.clear();
+      localCameraTrackRef.current = null;
     };
   }, []);
 
@@ -497,6 +574,7 @@ export function useLiveKit(): UseLiveKitReturn {
     participants,
     activeStreams,
     isLocalStreaming,
+    isCameraEnabled,
     streamPreset,
     connectionState,
     activeScreenTrack,
@@ -504,6 +582,7 @@ export function useLiveKit(): UseLiveKitReturn {
     disconnect,
     toggleMute,
     toggleDeafen,
+    toggleCamera,
     startScreenShare,
     stopScreenShare,
     setStreamPreset,

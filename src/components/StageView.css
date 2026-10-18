@@ -82,6 +82,15 @@
   background: #1b8748;
 }
 
+.stage-view__btn--active-cam {
+  background: var(--green, #23a55a);
+  color: #ffffff;
+}
+
+.stage-view__btn--active-cam:hover {
+  background: #1b8748;
+}
+
 .stage-view__btn--secondary {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-normal);
@@ -437,6 +446,15 @@
   background: #da373c;
 }
 
+.voice-grid__ctrl-btn--active-green {
+  background: #23a55a;
+  color: white;
+}
+
+.voice-grid__ctrl-btn--active-green:hover {
+  background: #1b8748;
+}
+
 .voice-grid__ctrl-btn--disconnect {
   background: #ed4245;
   color: white;
@@ -447,6 +465,106 @@
 .voice-grid__ctrl-btn--disconnect:hover {
   background: #da373c;
   transform: scale(1.08);
+}
+
+/* --- Camera Display Styles (Replacing Avatars) --- */
+.stage-view__camera-card--has-video {
+  background: #000;
+}
+
+.stage-view__camera-video-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.stage-view__camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.stage-view__camera-video-overlay {
+  position: absolute;
+  bottom: 4px;
+  left: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.stage-view__camera-name-badge {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.voice-card--has-camera {
+  width: 260px;
+  height: 180px;
+  padding: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.voice-card__video-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.voice-card__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+.voice-card__video-overlay {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.voice-card__overlay-name {
+  background: rgba(0, 0, 0, 0.75);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 190px;
+}
+
+.voice-card__overlay-mute {
+  background: rgba(237, 66, 69, 0.85);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
 }
 
 /* --- Quality Pill in Header --- */

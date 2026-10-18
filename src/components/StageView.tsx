@@ -9,6 +9,7 @@ interface StageViewProps {
   voiceState: VoiceState;
   streamState: StreamState;
   isLocalStreaming?: boolean;
+  isCameraEnabled?: boolean;
   activeScreenTrack?: MediaStreamTrack | null;
   activeStreams?: ActiveStream[];
   liveKitParticipants?: LiveKitParticipant[];
@@ -18,10 +19,53 @@ interface StageViewProps {
   isDeafened: boolean;
   onToggleMute: () => void;
   onToggleDeafen: () => void;
+  onToggleCamera?: () => void;
   onStartStream: () => void;
   onStopStream: () => void;
   onVoiceDisconnect: () => void;
   onOpenStreamQuality?: () => void;
+}
+
+function ParticipantCamera({
+  videoTrack,
+  className,
+}: {
+  videoTrack?: MediaStreamTrack;
+  className?: string;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !videoTrack) return;
+
+    try {
+      const mediaStream = new MediaStream([videoTrack]);
+      video.srcObject = mediaStream;
+      video.muted = true;
+      video.play().catch((err) => {
+        console.warn('[ParticipantCamera] play caught:', err);
+      });
+    } catch (e) {
+      console.error('[ParticipantCamera] Failed to bind camera track:', e);
+    }
+
+    return () => {
+      if (video) video.srcObject = null;
+    };
+  }, [videoTrack]);
+
+  if (!videoTrack) return null;
+
+  return (
+    <video
+      ref={videoRef}
+      className={className || 'participant-camera-video'}
+      autoPlay
+      playsInline
+      muted
+    />
+  );
 }
 
 function StreamTile({
@@ -126,6 +170,7 @@ export default function StageView({
   voiceState,
   streamState,
   isLocalStreaming = false,
+  isCameraEnabled = false,
   activeScreenTrack,
   activeStreams = [],
   liveKitParticipants = [],
@@ -134,6 +179,7 @@ export default function StageView({
   isDeafened,
   onToggleMute,
   onToggleDeafen,
+  onToggleCamera,
   onStartStream,
   onStopStream,
   onVoiceDisconnect,
@@ -172,6 +218,7 @@ export default function StageView({
             name: isSelf ? `${nickname} (Você)` : p.name || p.identity,
             isMuted: isSelf ? isMuted : p.isMuted,
             isSpeaking: p.isSpeaking,
+            videoTrack: p.videoTrack,
             isSelf,
           };
         })
@@ -181,6 +228,7 @@ export default function StageView({
             name: `${nickname || 'Você'} (Você)`,
             isMuted: isMuted,
             isSpeaking: false,
+            videoTrack: undefined,
             isSelf: true,
           },
         ];
@@ -225,6 +273,15 @@ export default function StageView({
         </div>
 
         <div className="stage-view__header-actions">
+          {onToggleCamera && (
+            <button
+              className={`stage-view__btn ${isCameraEnabled ? 'stage-view__btn--active-cam' : 'stage-view__btn--secondary'}`}
+              onClick={onToggleCamera}
+              title={isCameraEnabled ? 'Desligar Minha Câmera' : 'Ligar Minha Câmera'}
+            >
+              📹 {isCameraEnabled ? 'Câmera Ativa' : 'Ligar Câmera'}
+            </button>
+          )}
           {onOpenStreamQuality && (
             <button
               className="stage-view__btn stage-view__btn--secondary"
@@ -260,18 +317,30 @@ export default function StageView({
             {displayParticipants.map((p) => (
               <div
                 key={p.id}
-                className={`stage-view__camera-card ${p.isSpeaking ? 'stage-view__camera-card--speaking' : ''}`}
+                className={`stage-view__camera-card ${p.isSpeaking ? 'stage-view__camera-card--speaking' : ''} ${
+                  p.videoTrack ? 'stage-view__camera-card--has-video' : ''
+                }`}
               >
-                <div className="stage-view__camera-placeholder">
-                  <div
-                    className="stage-view__camera-avatar"
-                    style={{ background: getAvatarColor(p.name) }}
-                  >
-                    {getInitials(p.name)}
+                {p.videoTrack ? (
+                  <div className="stage-view__camera-video-wrapper">
+                    <ParticipantCamera videoTrack={p.videoTrack} className="stage-view__camera-video" />
+                    <div className="stage-view__camera-video-overlay">
+                      <span className="stage-view__camera-name-badge">{p.name}</span>
+                      {p.isMuted && <span style={{ fontSize: '0.75rem' }}>🔇</span>}
+                    </div>
                   </div>
-                  <span className="stage-view__camera-name">{p.name}</span>
-                  {p.isMuted && <span style={{ fontSize: '0.7rem' }}>🔇</span>}
-                </div>
+                ) : (
+                  <div className="stage-view__camera-placeholder">
+                    <div
+                      className="stage-view__camera-avatar"
+                      style={{ background: getAvatarColor(p.name) }}
+                    >
+                      {getInitials(p.name)}
+                    </div>
+                    <span className="stage-view__camera-name">{p.name}</span>
+                    {p.isMuted && <span style={{ fontSize: '0.7rem' }}>🔇</span>}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -321,25 +390,43 @@ export default function StageView({
             {displayParticipants.map((p) => (
               <div
                 key={p.id}
-                className={`voice-card ${p.isSpeaking ? 'voice-card--speaking' : ''}`}
+                className={`voice-card ${p.isSpeaking ? 'voice-card--speaking' : ''} ${
+                  p.videoTrack ? 'voice-card--has-camera' : ''
+                }`}
               >
-                <div
-                  className="voice-card__avatar"
-                  style={{ background: getAvatarColor(p.name) }}
-                >
-                  {getInitials(p.name)}
-                </div>
-                <div className="voice-card__name" title={p.name}>
-                  {p.name}
-                </div>
-
-                {p.isMuted && (
-                  <div className="voice-card__status" title="Microfone Desativado">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#ed4245">
-                      <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                      <line x1="3" y1="3" x2="21" y2="21" stroke="#ed4245" strokeWidth="2.5" />
-                    </svg>
+                {p.videoTrack ? (
+                  <div className="voice-card__video-container">
+                    <ParticipantCamera videoTrack={p.videoTrack} className="voice-card__video" />
+                    <div className="voice-card__video-overlay">
+                      <span className="voice-card__overlay-name">{p.name}</span>
+                      {p.isMuted && (
+                        <span className="voice-card__overlay-mute" title="Microfone Desativado">
+                          🔇
+                        </span>
+                      )}
+                    </div>
                   </div>
+                ) : (
+                  <>
+                    <div
+                      className="voice-card__avatar"
+                      style={{ background: getAvatarColor(p.name) }}
+                    >
+                      {getInitials(p.name)}
+                    </div>
+                    <div className="voice-card__name" title={p.name}>
+                      {p.name}
+                    </div>
+
+                    {p.isMuted && (
+                      <div className="voice-card__status" title="Microfone Desativado">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#ed4245">
+                          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                          <line x1="3" y1="3" x2="21" y2="21" stroke="#ed4245" strokeWidth="2.5" />
+                        </svg>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}
@@ -380,6 +467,19 @@ export default function StageView({
                 {isDeafened && <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" strokeWidth="2" />}
               </svg>
             </button>
+
+            {/* Câmera */}
+            {onToggleCamera && (
+              <button
+                className={`voice-grid__ctrl-btn ${isCameraEnabled ? 'voice-grid__ctrl-btn--active-green' : ''}`}
+                onClick={onToggleCamera}
+                title={isCameraEnabled ? 'Desligar Câmera' : 'Ligar Câmera'}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+                </svg>
+              </button>
+            )}
 
             {/* Compartilhar Tela (1080p 60fps) */}
             <button

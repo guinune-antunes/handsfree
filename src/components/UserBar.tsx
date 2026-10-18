@@ -7,8 +7,10 @@ interface UserBarProps {
   isDeafened: boolean;
   isVoiceConnected?: boolean;
   isStreaming?: boolean;
+  isCameraEnabled?: boolean;
   onToggleMute: () => void;
   onToggleDeafen: () => void;
+  onToggleCamera?: () => void;
   onOpenSettings: () => void;
   onStartStream?: () => void;
   onStopStream?: () => void;
@@ -20,8 +22,10 @@ export default function UserBar({
   isDeafened,
   isVoiceConnected = false,
   isStreaming = false,
+  isCameraEnabled = false,
   onToggleMute,
   onToggleDeafen,
+  onToggleCamera,
   onOpenSettings,
   onStartStream,
   onStopStream,
@@ -70,6 +74,20 @@ export default function UserBar({
             )}
           </svg>
         </button>
+
+        {/* Camera Button (visible when connected to voice) */}
+        {isVoiceConnected && (
+          <button
+            className={`user-bar__btn ${isCameraEnabled ? 'user-bar__btn--active' : ''}`}
+            onClick={onToggleCamera}
+            data-tooltip={isCameraEnabled ? 'Desligar Câmera' : 'Ligar Câmera'}
+            style={isCameraEnabled ? { color: 'var(--green, #3ba55d)' } : undefined}
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+            </svg>
+          </button>
+        )}
 
         {/* Screen Share Button (visible when connected to voice) */}
         {isVoiceConnected && (

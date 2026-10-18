@@ -37,6 +37,7 @@ function App() {
         isMuted: liveKit.voiceState.isMuted,
         isDeafened: liveKit.voiceState.isDeafened,
         isStreaming: liveKit.isLocalStreaming,
+        hasCamera: liveKit.isCameraEnabled,
       },
     ];
 
@@ -50,12 +51,13 @@ function App() {
           isMuted: p.isMuted,
           isDeafened: false,
           isStreaming: !!p.screenTrack,
+          hasCamera: !!p.videoTrack,
         });
       }
     });
 
     return list;
-  }, [config.nickname, liveKit.voiceState.isMuted, liveKit.voiceState.isDeafened, liveKit.isLocalStreaming, liveKit.participants]);
+  }, [config.nickname, liveKit.voiceState.isMuted, liveKit.voiceState.isDeafened, liveKit.isLocalStreaming, liveKit.isCameraEnabled, liveKit.participants]);
 
   // Sincroniza os membros conectados aos canais de voz dinamicamente
   useEffect(() => {
@@ -179,6 +181,7 @@ function App() {
           voiceState={liveKit.voiceState}
           streamState={liveKit.streamState}
           isLocalStreaming={liveKit.isLocalStreaming}
+          isCameraEnabled={liveKit.isCameraEnabled}
           activeScreenTrack={liveKit.activeScreenTrack}
           activeStreams={liveKit.activeStreams}
           isMuted={liveKit.voiceState.isMuted}
@@ -189,6 +192,7 @@ function App() {
           onSendMessage={handleSendMessage}
           onToggleMute={handleToggleMute}
           onToggleDeafen={handleToggleDeafen}
+          onToggleCamera={liveKit.toggleCamera}
           onOpenSettings={() => setSettingsOpen(true)}
           onStartStream={handleStartStream}
           onStopStream={handleStopStream}

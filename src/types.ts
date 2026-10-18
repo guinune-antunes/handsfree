@@ -22,6 +22,7 @@ export interface Member {
   isMuted: boolean;
   isDeafened: boolean;
   isStreaming: boolean;
+  hasCamera?: boolean;
 }
 
 export interface Channel {

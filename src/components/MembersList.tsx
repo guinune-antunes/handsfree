@@ -56,6 +56,12 @@ export default function MembersList({ members }: MembersListProps) {
             <line x1="1" y1="1" x2="23" y2="23" />
           </svg>
         )}
+        {member.hasCamera && (
+          <svg className="member-item__icon member-item__icon--camera" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#23a55a' }}>
+            <title>Câmera Ligada</title>
+            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+          </svg>
+        )}
         {member.isStreaming && (
           <svg className="member-item__icon member-item__icon--streaming" viewBox="0 0 24 24" fill="currentColor">
             <path d="M2 4.5A2.5 2.5 0 0 1 4.5 2h15A2.5 2.5 0 0 1 22 4.5v11a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 15.5v-11zM6 20h12v1.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V20z" />
