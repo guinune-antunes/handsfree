@@ -1,4 +1,4 @@
-# 🖧 Discord Clone Leve — Servidor (Server-Side)
+# 🖧 Shelter — Servidor (Server-Side)
 
 Recursos e configurações necessárias para hospedar o servidor LiveKit SFU, Redis e o Token Server em uma máquina Linux (Debian, Ubuntu, etc).
 
@@ -9,8 +9,8 @@ Recursos e configurações necessárias para hospedar o servidor LiveKit SFU, Re
 No seu servidor Linux, execute:
 
 ```bash
-git clone -b server https://github.com/guinune-antunes/handsfree.git discord-server
-cd discord-server
+git clone -b server https://github.com/guinune-antunes/handsfree.git shelter-server
+cd shelter-server
 chmod +x setup.sh
 ./setup.sh
 ```

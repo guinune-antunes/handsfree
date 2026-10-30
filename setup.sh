@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ========================================================
-# Setup Automático do Servidor — Discord Clone Leve
+# Setup Automático do Servidor — Shelter
 # Compatível com Debian, Ubuntu e derivados Linux
 # ========================================================
 
@@ -13,7 +13,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 echo -e "${BLUE}=====================================================${NC}"
-echo -e "${BLUE}    🚀 Discord Clone Leve — Instalação do Servidor   ${NC}"
+echo -e "${BLUE}    🚀 Shelter — Instalação e Inicialização          ${NC}"
 echo -e "${BLUE}=====================================================${NC}"
 
 # 1. Verificar Docker
@@ -23,16 +23,21 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-# 2. Detectar IP público ou local
-echo -e "\n${YELLOW}[1/4] Detectando endereço IP do servidor...${NC}"
-DETECTED_IP=$(curl -s4 --connect-timeout 3 ifconfig.me || curl -s4 --connect-timeout 3 icanhazip.com || hostname -I | awk '{print $1}')
-if [ -z "$DETECTED_IP" ]; then
-    DETECTED_IP="127.0.0.1"
-fi
-echo -e "IP detectado: ${GREEN}${DETECTED_IP}${NC}"
+# 2. Detectar IP público e local
+echo -e "\n${YELLOW}[1/4] Detectando endereços de rede do servidor...${NC}"
 
-read -r -p "Pressione ENTER para usar esse IP ou digite outro endereço: " INPUT_IP
-SERVER_IP=${INPUT_IP:-$DETECTED_IP}
+LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+if [ -z "$LOCAL_IP" ]; then
+    LOCAL_IP="127.0.0.1"
+fi
+
+PUBLIC_IP=$(curl -s4 --connect-timeout 3 ifconfig.me || curl -s4 --connect-timeout 3 icanhazip.com || echo "$LOCAL_IP")
+
+echo -e "• IP Local (na sua rede interna / Wi-Fi): ${GREEN}${LOCAL_IP}${NC}"
+echo -e "• IP Público (Internet externa):          ${GREEN}${PUBLIC_IP}${NC}"
+
+read -r -p "Pressione ENTER para usar o IP público ${PUBLIC_IP} (ou digite outro endereço/domínio): " INPUT_IP
+SERVER_IP=${INPUT_IP:-$PUBLIC_IP}
 
 # 3. Gerar chaves aleatórias se não existirem
 echo -e "\n${YELLOW}[2/4] Gerando credenciais seguras para o LiveKit...${NC}"
@@ -44,6 +49,7 @@ if [ ! -f .env ]; then
 LIVEKIT_API_KEY=${API_KEY}
 LIVEKIT_API_SECRET=${API_SECRET}
 PUBLIC_IP=${SERVER_IP}
+LOCAL_IP=${LOCAL_IP}
 EOF
     echo -e "Arquivo ${GREEN}.env${NC} criado com sucesso!"
 else
@@ -105,13 +111,24 @@ echo -e "\n${YELLOW}Status dos containers em execução:${NC}"
 docker compose ps
 
 echo -e "\n${GREEN}=====================================================${NC}"
-echo -e "${GREEN}    ✅ Servidor configurado e em execução!           ${NC}"
+echo -e "${GREEN}    ✅ Servidor Shelter configurado e em execução!   ${NC}"
 echo -e "${GREEN}=====================================================${NC}"
-echo -e "📌 Dados para conectar o aplicativo cliente:"
-echo -e "   • Host / IP:      ${GREEN}${SERVER_IP}${NC}"
-echo -e "   • Porta LiveKit:  ${GREEN}7880${NC}"
-echo -e "   • Token Server:   ${GREEN}http://${SERVER_IP}:3001${NC}"
-echo -e "\n🔍 Comandos úteis:"
+echo -e "📌 COMO CONECTAR NO APLICATIVO SHELTER:"
+echo -e ""
+echo -e "   🏠 ${YELLOW}VOCÊ NO MESMO WI-FI / REDE LOCAL DO SERVIDOR:${NC}"
+echo -e "      • Host / IP:      ${GREEN}${LOCAL_IP}${NC}"
+echo -e "      • Porta LiveKit:  ${GREEN}7880${NC}"
+echo -e "      (Use o IP local acima para conectar do seu próprio PC/notebook)"
+echo -e ""
+echo -e "   🌐 ${YELLOW}AMIGOS CONECTANDO PELA INTERNET (FORA DA SUA CASA):${NC}"
+echo -e "      • Host / IP:      ${GREEN}${SERVER_IP}${NC}"
+echo -e "      • Porta LiveKit:  ${GREEN}7880${NC}"
+echo -e "      ⚠️ ${YELLOW}Atenção: Para amigos externos, seu roteador precisa ter o${NC}"
+echo -e "         ${YELLOW}redirecionamento de portas (Port Forwarding) apontando para ${LOCAL_IP}:${NC}"
+echo -e "         - TCP: 7880, 7881, 3001"
+echo -e "         - UDP: 3478, 50000 a 60000"
+echo -e ""
+echo -e "🔍 Comandos úteis:"
 echo -e "   • Ver status:   docker compose ps"
 echo -e "   • Ver logs:     docker compose logs -f"
 echo -e "   • Parar:        docker compose down"
