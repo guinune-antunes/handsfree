@@ -180,22 +180,22 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
       <div className="settings-modal">
         {/* Navigation Sidebar */}
         <div className="settings-modal__nav">
-          <div className="settings-modal__nav-title">Configurações do App</div>
+          <div className="settings-modal__nav-title">// SISTEMA & CONFIG</div>
           <div
             className={`settings-modal__nav-item ${activeTab === 'voice-video' ? 'settings-modal__nav-item--active' : ''}`}
             onClick={() => setActiveTab('voice-video')}
           >
-            Voz & Vídeo
+            DISPOSITIVOS // VOZ & VÍDEO
           </div>
           <div
             className={`settings-modal__nav-item ${activeTab === 'about' ? 'settings-modal__nav-item--active' : ''}`}
             onClick={() => setActiveTab('about')}
           >
-            Sobre o Shelter
+            SOBRE O SHELTER
           </div>
           <div className="settings-modal__nav-separator" />
           <div className="settings-modal__nav-item" style={{ color: 'var(--red)', fontSize: '0.8125rem' }}>
-            Sair
+            DESCONECTAR
           </div>
         </div>
 
@@ -211,11 +211,11 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
 
           {activeTab === 'voice-video' && (
             <>
-              <h2 className="settings-modal__section-title">Voz &amp; Vídeo</h2>
+              <h2 className="settings-modal__section-title">DISPOSITIVOS DE VOZ &amp; VÍDEO</h2>
 
               {devicesError && (
-                <div style={{ padding: '8px 12px', background: 'rgba(237, 66, 69, 0.15)', border: '1px solid rgba(237, 66, 69, 0.3)', borderRadius: '4px', color: '#ed4245', fontSize: '0.8125rem', marginBottom: '16px' }}>
-                  ⚠️ {devicesError}
+                <div style={{ padding: '8px 12px', background: 'rgba(237, 66, 69, 0.15)', border: '1px solid rgba(237, 66, 69, 0.3)', borderRadius: '2px', color: '#ed4245', fontSize: '0.8125rem', marginBottom: '16px' }}>
+                  [ALERTA DE HARDWARE] {devicesError}
                 </div>
               )}
 

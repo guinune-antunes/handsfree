@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import type { Message, Channel } from '../types';
 import { getInitials, formatTimestamp } from '../data/mockData';
+import ShelterMark from './ShelterMark';
 import './ChatPanel.css';
 
 interface ChatPanelProps {
@@ -22,8 +23,8 @@ export default function ChatPanel({ channel, messages, onSendMessage }: ChatPane
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = '22px';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + 'px';
+      textareaRef.current.style.height = '24px';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 180) + 'px';
     }
   }, [inputValue]);
 
@@ -46,12 +47,10 @@ export default function ChatPanel({ channel, messages, onSendMessage }: ChatPane
     if (index === 0) return true;
     const prev = messages[index - 1];
     if (prev.authorId !== msg.authorId) return true;
-    // More than 5 minutes apart
     if (msg.timestamp - prev.timestamp > 5 * 60_000) return true;
     return false;
   };
 
-  // Generate avatar color from name
   const getAvatarColor = (name: string): string => {
     const colors = ['#2f8f4e', '#1f9e8a', '#6f9a12', '#b8860b', '#3b7d6e', '#4f7d2a', '#2e8b8b', '#8a6d1d'];
     let hash = 0;
@@ -63,33 +62,52 @@ export default function ChatPanel({ channel, messages, onSendMessage }: ChatPane
 
   return (
     <div className="chat-panel">
-      {/* Header */}
+      {/* Tactical Stream Header */}
       <div className="chat-panel__header">
-        <span className="chat-panel__header-icon">#</span>
-        <span className="chat-panel__header-name">{channel.name}</span>
-        {channel.description && (
-          <>
-            <div className="chat-panel__header-divider" />
-            <span className="chat-panel__header-desc">{channel.description}</span>
-          </>
-        )}
+        <div className="chat-panel__header-tag">
+          <span className="chat-panel__header-tag-text">&gt;_</span>
+        </div>
+        <div className="chat-panel__header-title-block">
+          <span className="chat-panel__header-prefix">DAT //</span>
+          <span className="chat-panel__header-name">{channel.name.toUpperCase()}</span>
+        </div>
+
+        <div className="chat-panel__header-divider" />
+
+        <span className="chat-panel__header-desc">
+          {channel.description || 'Terminal criptografado para transmissão de dados e despachos'}
+        </span>
+
+        <div className="chat-panel__header-crypto-badge">
+          <span className="chat-panel__crypto-dot" />
+          AES-GCM // SEGURO
+        </div>
       </div>
 
-      {/* Messages */}
+      {/* Messages Stream */}
       <div className="chat-panel__messages">
         <div className="chat-panel__messages-spacer" />
 
-        {/* Welcome */}
-        <div className="chat-welcome">
-          <div className="chat-welcome__icon">#</div>
-          <h2 className="chat-welcome__title">Bem-vindo ao #{channel.name}</h2>
+        {/* Welcome Node Initialization Banner */}
+        <div className="chat-welcome tactical-bracket">
+          <div className="chat-welcome__header">
+            <ShelterMark size={32} />
+            <div>
+              <div className="chat-welcome__sub">// PROTOCOLO SHELTER INICIALIZADO</div>
+              <h2 className="chat-welcome__title">TERMINAL :: DAT-{channel.name.toUpperCase()}</h2>
+            </div>
+          </div>
           <p className="chat-welcome__desc">
-            Este é o começo do canal #{channel.name}.
-            {channel.description ? ` ${channel.description}.` : ''}
+            Comunicação criptografada de ponta a ponta. Todas as transmissões permanecem restritas à rede local e ao seu servidor privado.
+            {channel.description ? ` [OBJETIVO: ${channel.description}]` : ''}
           </p>
+          <div className="chat-welcome__meta">
+            <span className="tactical-tag">NÓ DE DADOS PRIVADO</span>
+            <span className="tactical-tag">LOG LOCAL ATIVO</span>
+          </div>
         </div>
 
-        {/* Message List */}
+        {/* Message Log */}
         {messages.map((msg, index) => {
           const showHeader = shouldShowHeader(msg, index);
           return (
@@ -100,7 +118,7 @@ export default function ChatPanel({ channel, messages, onSendMessage }: ChatPane
               {showHeader && (
                 <div className="message__avatar-col">
                   <div
-                    className="message__avatar"
+                    className="message__avatar chamfer-sm"
                     style={{ background: getAvatarColor(msg.authorName) }}
                   >
                     {getInitials(msg.authorName)}
@@ -120,10 +138,12 @@ export default function ChatPanel({ channel, messages, onSendMessage }: ChatPane
               <div className="message__body">
                 {showHeader && (
                   <div className="message__header">
+                    <span className="message__callsign-badge">OP</span>
                     <span className="message__author">{msg.authorName}</span>
                     <span className="message__timestamp">
-                      {formatTimestamp(msg.timestamp)}
+                      [{formatTimestamp(msg.timestamp)}]
                     </span>
+                    <span className="message__crypto-tag">[TX // OK]</span>
                   </div>
                 )}
                 <div className="message__content">{msg.content}</div>
@@ -135,25 +155,31 @@ export default function ChatPanel({ channel, messages, onSendMessage }: ChatPane
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Tactical Input Console */}
       <div className="chat-panel__input-area">
-        <div className="chat-input">
+        <div className="chat-input chamfer-sm">
+          <div className="chat-input__prompt-tag">TX &gt;</div>
           <textarea
             ref={textareaRef}
             className="chat-input__field"
-            placeholder={`Mensagem #${channel.name}`}
+            placeholder={`Transmitir despacho para [${channel.name}]... (ENTER para enviar)`}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={1}
           />
-          <div className="chat-input__actions">
-            <button className="chat-input__btn" data-tooltip="Emoji" type="button">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8zm3.5-9c.828 0 1.5-.672 1.5-1.5S16.328 8 15.5 8 14 8.672 14 9.5s.672 1.5 1.5 1.5zm-7 0c.828 0 1.5-.672 1.5-1.5S9.328 8 8.5 8 7 8.672 7 9.5 7.672 11 8.5 11zm3.5 6.5c2.33 0 4.32-1.45 5.12-3.5H6.88c.8 2.05 2.79 3.5 5.12 3.5z" />
-              </svg>
-            </button>
-          </div>
+          <button
+            className="chat-input__send-btn"
+            onClick={handleSend}
+            disabled={!inputValue.trim()}
+            title="Transmitir mensagem"
+          >
+            <span className="chat-input__send-text">TRANSMITIR</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>

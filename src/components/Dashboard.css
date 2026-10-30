@@ -1,38 +1,263 @@
 /* ============================================
-   DASHBOARD — Shelter
-   Layout principal CSS Grid (3 colunas)
+   DASHBOARD — Shelter Tactical Command Deck
+   Layout tático integrado com barra de comando superior
    ============================================ */
 
-.dashboard {
+.dashboard-wrapper {
   width: 100%;
   height: 100vh;
-  display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr var(--members-width);
-  grid-template-rows: 1fr;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-tertiary);
   overflow: hidden;
   animation: fadeIn 0.3s ease forwards;
 }
 
-/* --- Left Column (Sidebar + UserBar) --- */
+/* ============================================
+   TOP TACTICAL COMMAND BRIDGE
+   ============================================ */
+
+.tactical-bridge {
+  height: 48px;
+  background: linear-gradient(180deg, #101612 0%, #080c09 100%);
+  border-bottom: 1px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  gap: 16px;
+  flex-shrink: 0;
+  user-select: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 50;
+}
+
+.tactical-bridge::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent) 0%, transparent 20%, transparent 80%, var(--accent) 100%);
+  opacity: 0.6;
+}
+
+/* Brand Section */
+.tactical-bridge__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tactical-bridge__logo {
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+.tactical-bridge__title {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(182, 242, 31, 0.3);
+}
+
+.tactical-bridge__badge {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 5px;
+  background: rgba(182, 242, 31, 0.12);
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
+  border-radius: 1px;
+}
+
+.tactical-bridge__sec-pulse {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(182, 242, 31, 0.2);
+}
+
+.tactical-bridge__sec-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 2s infinite;
+}
+
+.tactical-bridge__sec-text {
+  font-family: var(--font-mono);
+  font-size: 0.5938rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+/* Center HUD Display */
+.tactical-bridge__hud {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+  justify-content: center;
+}
+
+.tactical-bridge__frequency-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(182, 242, 31, 0.2);
+  border-radius: 2px;
+}
+
+.tactical-bridge__freq-icon {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.tactical-bridge__freq-name {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--header-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tactical-bridge__telemetry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+.tactical-bridge__stat-divider {
+  opacity: 0.3;
+}
+
+/* Right Bridge Actions */
+.tactical-bridge__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.bridge-btn {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  height: 28px;
+  padding: 0 10px;
+  background: rgba(18, 24, 19, 0.8);
+  border: 1px solid rgba(182, 242, 31, 0.2);
+  color: var(--text-normal);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.bridge-btn:hover {
+  background: rgba(182, 242, 31, 0.15);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(182, 242, 31, 0.2);
+}
+
+.bridge-btn__dot {
+  width: 6px;
+  height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--green);
+}
+
+.bridge-btn--active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(182, 242, 31, 0.1);
+}
+
+.bridge-btn--muted {
+  color: var(--red);
+  border-color: rgba(255, 77, 87, 0.4);
+  background: rgba(255, 77, 87, 0.1);
+}
+
+.bridge-btn--muted .bridge-btn__dot {
+  background: var(--red);
+  box-shadow: 0 0 6px var(--red);
+}
+
+.bridge-btn--settings {
+  border-color: rgba(182, 242, 31, 0.3);
+}
+
+/* ============================================
+   MAIN BODY LAYOUT
+   ============================================ */
+
+.dashboard-body {
+  flex: 1;
+  display: grid;
+  height: calc(100vh - 48px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dashboard-body--with-members {
+  grid-template-columns: 260px 1fr 240px;
+}
+
+.dashboard-body--no-members {
+  grid-template-columns: 260px 1fr;
+}
+
+/* Sidebar Column (User Deck on top + Channels) */
 .dashboard__sidebar {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background: var(--bg-secondary);
+  height: 100%;
+  background: #080c09;
+  border-right: 1px solid var(--border-strong);
   overflow: hidden;
 }
 
-/* --- Center Column --- */
+/* Center Column */
 .dashboard__center {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   min-width: 0;
+  background: var(--bg-primary);
   overflow: hidden;
 }
 
-/* --- Right Column --- */
+/* Members Column */
 .dashboard__members {
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
 }

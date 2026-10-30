@@ -86,16 +86,17 @@
   --transition-slow: 0.4s ease;
 
   /* --- Typography --- */
-  --font-primary: 'Inter', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-display: 'Rajdhani', 'Inter', 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Consolas', 'Andale Mono', 'Lucida Console', monospace;
+  --font-primary: 'Chakra Petch', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Orbitron', 'Chakra Petch', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', 'Lucida Console', monospace;
 
   font-family: var(--font-primary);
-  font-size: 16px;
-  line-height: 1.375;
-  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 500;
   color: var(--text-normal);
   background-color: var(--bg-primary);
+  letter-spacing: 0.015em;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -399,4 +400,121 @@ ul, ol {
 [data-tooltip]:hover::after {
   opacity: 1;
   transform: translateX(-50%) scale(1);
+}
+
+/* ============================================
+   TACTICAL HUD UTILITIES (SHELTER)
+   ============================================ */
+
+/* Chanfro tático (cantos cortados em 45 graus) */
+.chamfer-card {
+  clip-path: polygon(
+    8px 0,
+    100% 0,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    0 100%,
+    0 8px
+  );
+}
+
+.chamfer-sm {
+  clip-path: polygon(
+    4px 0,
+    100% 0,
+    100% calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    0 100%,
+    0 4px
+  );
+}
+
+/* Moldura tática com retículas nos cantos */
+.tactical-bracket {
+  position: relative;
+}
+
+.tactical-bracket::before,
+.tactical-bracket::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-color: var(--accent);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.tactical-bracket::before {
+  top: 0;
+  left: 0;
+  border-top: 1.5px solid var(--accent);
+  border-left: 1.5px solid var(--accent);
+}
+
+.tactical-bracket::after {
+  bottom: 0;
+  right: 0;
+  border-bottom: 1.5px solid var(--accent);
+  border-right: 1.5px solid var(--accent);
+}
+
+/* Linha de varredura CRT sutil (scanlines) */
+.crt-scanlines {
+  position: relative;
+}
+
+.crt-scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+/* Medidor VU de Áudio / Sinal Tático */
+.vu-meter {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.vu-meter__bar {
+  width: 2.5px;
+  background: var(--accent);
+  border-radius: 0.5px;
+  animation: vuBounce 1.2s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+.vu-meter__bar:nth-child(1) { height: 30%; animation-delay: 0.1s; }
+.vu-meter__bar:nth-child(2) { height: 70%; animation-delay: 0.3s; }
+.vu-meter__bar:nth-child(3) { height: 100%; animation-delay: 0.15s; }
+.vu-meter__bar:nth-child(4) { height: 50%; animation-delay: 0.4s; }
+
+@keyframes vuBounce {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.6; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* Tag / Chip tático em caixa alta */
+.tactical-tag {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  background: rgba(182, 242, 31, 0.08);
+  border: 1px solid rgba(182, 242, 31, 0.22);
+  color: var(--accent);
+  border-radius: 1px;
 }

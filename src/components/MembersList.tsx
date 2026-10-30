@@ -10,7 +10,6 @@ export default function MembersList({ members }: MembersListProps) {
   const onlineMembers = members.filter((m) => m.status !== 'offline');
   const offlineMembers = members.filter((m) => m.status === 'offline');
 
-  // Generate avatar color from name
   const getAvatarColor = (name: string): string => {
     const colors = ['#2f8f4e', '#1f9e8a', '#6f9a12', '#b8860b', '#3b7d6e', '#4f7d2a', '#2e8b8b', '#8a6d1d'];
     let hash = 0;
@@ -23,74 +22,93 @@ export default function MembersList({ members }: MembersListProps) {
   const renderMember = (member: Member) => (
     <div
       key={member.id}
-      className={`member-item ${member.status === 'offline' ? 'member-item--offline' : ''}`}
+      className={`operator-card ${member.status === 'offline' ? 'operator-card--offline' : ''}`}
     >
-      <div className="member-item__avatar-wrapper">
+      <div className="operator-card__avatar-wrapper">
         <div
-          className="member-item__avatar"
+          className="operator-card__avatar chamfer-sm"
           style={{ background: getAvatarColor(member.name) }}
         >
           {getInitials(member.name)}
         </div>
-        <div className={`member-item__status-dot member-item__status-dot--${member.status}`} />
+        <div className={`operator-card__status-dot operator-card__status-dot--${member.status}`} />
       </div>
 
-      <div className="member-item__info">
-        <div className="member-item__name">{member.name}</div>
-        {member.isStreaming && (
-          <div className="member-item__activity">Transmitindo</div>
-        )}
+      <div className="operator-card__info">
+        <div className="operator-card__name-row">
+          <span className="operator-card__badge">OP</span>
+          <span className="operator-card__name" title={member.name}>{member.name}</span>
+        </div>
+        <div className="operator-card__status-line">
+          {member.isStreaming ? (
+            <span className="operator-card__tag operator-card__tag--stream">TRANSMITINDO TELA</span>
+          ) : member.status === 'offline' ? (
+            <span className="operator-card__tag">DESCONECTADO</span>
+          ) : (
+            <span className="operator-card__tag operator-card__tag--active">SINAL ESTÁVEL</span>
+          )}
+        </div>
       </div>
 
-      <div className="member-item__icons">
-        {member.isMuted && (
-          <svg className="member-item__icon member-item__icon--muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 1a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-            <line x1="1" y1="1" x2="23" y2="23" />
-          </svg>
+      <div className="operator-card__telemetry">
+        {/* Signal Bars */}
+        {member.status !== 'offline' && (
+          <div className="operator-card__signal" title="Sinal de Conexão: Forte">
+            <span className="operator-card__signal-bar" style={{ height: '4px' }} />
+            <span className="operator-card__signal-bar" style={{ height: '8px' }} />
+            <span className="operator-card__signal-bar" style={{ height: '12px' }} />
+          </div>
         )}
-        {member.isDeafened && (
-          <svg className="member-item__icon member-item__icon--deafened" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
-            <line x1="1" y1="1" x2="23" y2="23" />
-          </svg>
-        )}
-        {member.hasCamera && (
-          <svg className="member-item__icon member-item__icon--camera" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--green)' }}>
-            <title>Câmera Ligada</title>
-            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
-          </svg>
-        )}
-        {member.isStreaming && (
-          <svg className="member-item__icon member-item__icon--streaming" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M2 4.5A2.5 2.5 0 0 1 4.5 2h15A2.5 2.5 0 0 1 22 4.5v11a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 15.5v-11zM6 20h12v1.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V20z" />
-          </svg>
-        )}
+
+        {/* Hardware Status Icons */}
+        <div className="operator-card__icons">
+          {member.isMuted && (
+            <span className="operator-chip operator-chip--muted" title="Microfone Desativado">
+              MUT
+            </span>
+          )}
+          {member.isDeafened && (
+            <span className="operator-chip operator-chip--muted" title="Áudio Desativado">
+              DEF
+            </span>
+          )}
+          {member.hasCamera && (
+            <span className="operator-chip operator-chip--cam" title="Câmera Ativa">
+              CAM
+            </span>
+          )}
+          {member.isStreaming && (
+            <span className="operator-chip operator-chip--stream" title="Transmitindo Tela">
+              SCR
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="members-list">
-      <div className="members-list__header">
-        <span className="members-list__title">Membros — {members.length}</span>
+    <div className="members-deck">
+      <div className="members-deck__header">
+        <span className="members-deck__prefix">//</span>
+        <span className="members-deck__title">OPERADORES NA REDE</span>
+        <span className="members-deck__count">[{members.length}]</span>
       </div>
 
-      <div className="members-list__scroll">
+      <div className="members-deck__scroll">
         {onlineMembers.length > 0 && (
-          <div>
-            <div className="members-section__title">
-              Online — {onlineMembers.length}
+          <div className="members-deck__group">
+            <div className="members-deck__group-title">
+              [ NÓS OPERACIONAIS — {onlineMembers.length} ]
             </div>
             {onlineMembers.map(renderMember)}
           </div>
         )}
 
         {offlineMembers.length > 0 && (
-          <div>
-            <div className="members-section__title">
-              Offline — {offlineMembers.length}
+          <div className="members-deck__group">
+            <div className="members-deck__group-title">
+              [ NÓS FORA DE ALCANCE — {offlineMembers.length} ]
             </div>
             {offlineMembers.map(renderMember)}
           </div>

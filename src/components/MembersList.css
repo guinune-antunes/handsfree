@@ -1,174 +1,251 @@
 /* ============================================
-   MEMBERS LIST — Shelter
-   Barra lateral direita com lista de membros
+   MEMBERS DECK — Shelter Tactical Roster
+   Roster de operadores na rede privada
    ============================================ */
 
-.members-list {
+.members-deck {
   width: var(--members-width);
   height: 100%;
-  background: var(--bg-secondary);
-  border-left: 1px solid var(--border);
+  background: #080c09;
+  border-left: 1px solid var(--border-strong);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideInRight 0.3s ease forwards;
+  user-select: none;
 }
 
 /* --- Header --- */
-.members-list__header {
+.members-deck__header {
   height: var(--header-height);
-  padding: 0 16px;
+  padding: 0 14px;
   display: flex;
   align-items: center;
+  gap: 6px;
   border-bottom: 1px solid var(--border-strong);
+  background: linear-gradient(180deg, #101612 0%, #080c09 100%);
   flex-shrink: 0;
 }
 
-.members-list__title {
-  font-family: var(--font-display);
-  font-size: 0.875rem;
+.members-deck__prefix {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent);
   font-weight: 700;
+}
+
+.members-deck__title {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--channel-default);
+  letter-spacing: 0.12em;
+  color: var(--header-primary);
+  flex: 1;
+}
+
+.members-deck__count {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
 }
 
 /* --- Scrollable List --- */
-.members-list__scroll {
+.members-deck__scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 8px;
+  padding: 10px 8px;
 }
 
-/* --- Section Header --- */
-.members-section__title {
-  padding: 16px 8px 4px;
-  font-family: var(--font-display);
-  font-size: 0.8125rem;
+/* --- Group --- */
+.members-deck__group {
+  margin-bottom: 16px;
+}
+
+.members-deck__group-title {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--channel-default);
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  padding: 4px 8px 8px;
 }
 
-/* --- Member Item --- */
-.member-item {
+/* --- Operator Card --- */
+.operator-card {
   display: flex;
   align-items: center;
   padding: 6px 8px;
-  border-radius: var(--radius-sm);
+  gap: 10px;
+  background: rgba(18, 24, 19, 0.4);
+  border: 1px solid transparent;
+  border-radius: 2px;
   cursor: pointer;
-  gap: 12px;
-  transition: background var(--transition-fast);
+  transition: all var(--transition-fast);
+  margin-bottom: 3px;
 }
 
-.member-item:hover {
-  background: var(--bg-modifier-hover);
+.operator-card:hover {
+  background: rgba(182, 242, 31, 0.08);
+  border-color: rgba(182, 242, 31, 0.25);
+  transform: translateX(-2px);
 }
 
-.member-item--offline {
-  opacity: 0.4;
+.operator-card--offline {
+  opacity: 0.45;
+  background: transparent;
 }
 
 /* --- Avatar --- */
-.member-item__avatar-wrapper {
+.operator-card__avatar-wrapper {
   position: relative;
   flex-shrink: 0;
 }
 
-.member-item__avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
+.operator-card__avatar {
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-display);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
   color: white;
+  border: 1px solid rgba(182, 242, 31, 0.3);
 }
 
-.member-item__status-dot {
+.operator-card__status-dot {
   position: absolute;
   bottom: -2px;
   right: -2px;
-  width: 12px;
-  height: 12px;
-  border-radius: var(--radius-full);
-  border: 3px solid var(--bg-secondary);
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  border: 1.5px solid #080c09;
 }
 
-.member-item:hover .member-item__status-dot {
-  border-color: var(--bg-surface); /* slightly lighter on hover */
-}
-
-.member-item__status-dot--online {
+.operator-card__status-dot--online {
   background: var(--status-online);
-  animation: statusPulse 3s ease-in-out infinite;
+  box-shadow: 0 0 6px var(--status-online);
 }
 
-.member-item__status-dot--idle {
+.operator-card__status-dot--idle {
   background: var(--status-idle);
 }
 
-.member-item__status-dot--dnd {
+.operator-card__status-dot--dnd {
   background: var(--status-dnd);
 }
 
-.member-item__status-dot--offline {
+.operator-card__status-dot--offline {
   background: var(--status-offline);
 }
 
 /* --- Info --- */
-.member-item__info {
+.operator-card__info {
   flex: 1;
   min-width: 0;
 }
 
-.member-item__name {
-  font-family: var(--font-display);
-  font-size: 1.0625rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--channel-default);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.member-item:hover .member-item__name {
-  color: var(--interactive-hover);
-}
-
-.member-item__activity {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* --- Voice Icons --- */
-.member-item__icons {
+.operator-card__name-row {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 5px;
+}
+
+.operator-card__badge {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  font-weight: 800;
+  background: rgba(182, 242, 31, 0.12);
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
+  padding: 0 3px;
+  border-radius: 1px;
+}
+
+.operator-card__name {
+  font-family: var(--font-primary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--header-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.operator-card:hover .operator-card__name {
+  color: #fff;
+}
+
+.operator-card__status-line {
+  margin-top: 1px;
+}
+
+.operator-card__tag {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  color: var(--text-muted);
+}
+
+.operator-card__tag--active {
+  color: var(--green);
+}
+
+.operator-card__tag--stream {
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+/* --- Telemetry & Chips --- */
+.operator-card__telemetry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
 }
 
-.member-item__icon {
-  width: 16px;
-  height: 16px;
-  color: var(--text-muted);
+.operator-card__signal {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5px;
+  height: 12px;
 }
 
-.member-item__icon--muted {
+.operator-card__signal-bar {
+  width: 2px;
+  background: var(--green);
+  border-radius: 0.5px;
+  opacity: 0.8;
+}
+
+.operator-card__icons {
+  display: flex;
+  gap: 2px;
+}
+
+.operator-chip {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  font-weight: 800;
+  padding: 1px 3px;
+  border-radius: 1px;
+}
+
+.operator-chip--muted {
+  background: rgba(255, 77, 87, 0.15);
+  border: 1px solid rgba(255, 77, 87, 0.4);
   color: var(--red);
 }
 
-.member-item__icon--deafened {
-  color: var(--red);
+.operator-chip--cam {
+  background: rgba(45, 226, 143, 0.15);
+  border: 1px solid rgba(45, 226, 143, 0.4);
+  color: var(--green);
 }
 
-.member-item__icon--streaming {
-  color: var(--accent);
+.operator-chip--stream {
+  background: rgba(25, 227, 208, 0.15);
+  border: 1px solid rgba(25, 227, 208, 0.4);
+  color: var(--cyan);
 }

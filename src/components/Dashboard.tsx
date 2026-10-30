@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import { useState, type RefObject } from 'react';
 import type { Channel, Member, Message, VoiceState, StreamState, ActiveStream } from '../types';
 import type { LiveKitParticipant } from '../hooks/useLiveKit';
 import ChannelSidebar from './ChannelSidebar';
@@ -6,6 +6,7 @@ import ChatPanel from './ChatPanel';
 import StageView from './StageView';
 import MembersList from './MembersList';
 import UserBar from './UserBar';
+import ShelterMark from './ShelterMark';
 import './Dashboard.css';
 
 interface DashboardProps {
@@ -65,6 +66,8 @@ export default function Dashboard({
   liveKitParticipants,
   screenVideoRef,
 }: DashboardProps) {
+  const [showMembers, setShowMembers] = useState(true);
+
   const currentChannel = channels.find((ch) => ch.id === currentChannelId);
   const channelMessages = messages.filter((m) => m.channelId === currentChannelId);
 
@@ -73,71 +76,158 @@ export default function Dashboard({
   const showStage = isVoiceChannel || streamState.isActive || (activeStreams && activeStreams.length > 0);
 
   return (
-    <div className="dashboard">
-      {/* Esquerda: Canais + Barra de Usuário */}
-      <div className="dashboard__sidebar">
-        <ChannelSidebar
-          channels={channels}
-          members={members}
-          currentChannelId={currentChannelId}
-          voiceState={voiceState}
-          nickname={nickname}
-          onChannelSelect={onChannelSelect}
-          onVoiceConnect={onVoiceConnect}
-          onVoiceDisconnect={onVoiceDisconnect}
-        />
-        <UserBar
-          nickname={nickname}
-          isMuted={isMuted}
-          isDeafened={isDeafened}
-          isVoiceConnected={voiceState.isConnected}
-          isStreaming={isLocalStreaming}
-          isCameraEnabled={isCameraEnabled}
-          onToggleMute={onToggleMute}
-          onToggleDeafen={onToggleDeafen}
-          onToggleCamera={onToggleCamera}
-          onOpenSettings={onOpenSettings}
-          onStartStream={onStartStream}
-          onStopStream={onStopStream}
-        />
-      </div>
+    <div className="dashboard-wrapper">
+      {/* ============================================
+          TOP TACTICAL COMMAND BRIDGE (HEADER GERAL)
+          ============================================ */}
+      <header className="tactical-bridge">
+        {/* Bridge Left: Brand & Secure Protocol */}
+        <div className="tactical-bridge__brand">
+          <ShelterMark size={22} className="tactical-bridge__logo" />
+          <span className="tactical-bridge__title">SHELTER</span>
+          <span className="tactical-bridge__badge">TERMINAL TÁTICO</span>
+          <div className="tactical-bridge__sec-pulse">
+            <span className="tactical-bridge__sec-dot" />
+            <span className="tactical-bridge__sec-text">AES-GCM // SEGURO</span>
+          </div>
+        </div>
 
-      {/* Centro: Chat ou Palco de Voz/Transmissão */}
-      <div className="dashboard__center">
-        {showStage ? (
-          <StageView
-            channelName={currentChannel?.name || 'Canal de Voz'}
-            voiceState={voiceState}
-            streamState={streamState}
-            isLocalStreaming={isLocalStreaming}
-            isCameraEnabled={isCameraEnabled}
-            activeScreenTrack={activeScreenTrack}
-            activeStreams={activeStreams}
-            onStopStream={onStopStream}
-            onStartStream={onStartStream}
-            onOpenStreamQuality={onOpenStreamQuality}
-            onToggleMute={onToggleMute}
-            onToggleDeafen={onToggleDeafen}
-            onToggleCamera={onToggleCamera}
-            onVoiceDisconnect={onVoiceDisconnect}
-            liveKitParticipants={liveKitParticipants}
-            screenVideoRef={screenVideoRef}
+        {/* Bridge Center: Active Node HUD & Telemetry */}
+        <div className="tactical-bridge__hud">
+          <div className="tactical-bridge__frequency-display">
+            <span className="tactical-bridge__freq-icon">
+              {showStage ? '∿' : '>_'}
+            </span>
+            <span className="tactical-bridge__freq-name">
+              {showStage
+                ? `FREQUÊNCIA :: ${currentChannel?.name.toUpperCase() || 'SALA TÁTICA'}`
+                : `TERMINAL :: ${currentChannel?.name.toUpperCase() || 'DADOS'}`}
+            </span>
+          </div>
+
+          <div className="tactical-bridge__telemetry">
+            <span className="tactical-bridge__stat">SFU: LIVEKIT 7880</span>
+            <span className="tactical-bridge__stat-divider">/</span>
+            <span className="tactical-bridge__stat">LATÊNCIA: ESTÁVEL</span>
+            <span className="tactical-bridge__stat-divider">/</span>
+            <span className="tactical-bridge__stat">OPERADORES: {members.length}</span>
+          </div>
+        </div>
+
+        {/* Bridge Right: Quick Deck Toggles */}
+        <div className="tactical-bridge__actions">
+          {/* Quick Mic Indicator & Toggle */}
+          <button
+            className={`bridge-btn ${isMuted ? 'bridge-btn--muted' : 'bridge-btn--active'}`}
+            onClick={onToggleMute}
+            title={isMuted ? 'Microfone Mutado (Clique para ativar)' : 'Microfone Ativo'}
+          >
+            <span className="bridge-btn__dot" />
+            MIC {isMuted ? 'OFF' : 'ON'}
+          </button>
+
+          {/* Quick Deafen Indicator & Toggle */}
+          <button
+            className={`bridge-btn ${isDeafened ? 'bridge-btn--muted' : ''}`}
+            onClick={onToggleDeafen}
+            title={isDeafened ? 'Áudio Desativado (Clique para ouvir)' : 'Áudio Ativo'}
+          >
+            SOM {isDeafened ? 'OFF' : 'ON'}
+          </button>
+
+          {/* Toggle Operator Roster Panel */}
+          <button
+            className={`bridge-btn bridge-btn--toggle ${showMembers ? 'bridge-btn--active' : ''}`}
+            onClick={() => setShowMembers((prev) => !prev)}
+            title="Alternar visibilidade da lista de operadores"
+          >
+            OPERADORES [{members.length}]
+          </button>
+
+          {/* System Settings */}
+          <button
+            className="bridge-btn bridge-btn--settings"
+            onClick={onOpenSettings}
+            title="Abrir configurações do sistema"
+          >
+            CONFIG
+          </button>
+        </div>
+      </header>
+
+      {/* ============================================
+          MAIN WORKSPACE LAYOUT
+          ============================================ */}
+      <div className={`dashboard-body ${showMembers ? 'dashboard-body--with-members' : 'dashboard-body--no-members'}`}>
+        {/* Esquerda: Barra de Usuário no Topo + Diretório de Canais */}
+        <aside className="dashboard__sidebar">
+          {/* Operator Deck posicionado no TOPO da coluna lateral */}
+          <UserBar
             nickname={nickname}
             isMuted={isMuted}
             isDeafened={isDeafened}
+            isVoiceConnected={voiceState.isConnected}
+            isStreaming={isLocalStreaming}
+            isCameraEnabled={isCameraEnabled}
+            onToggleMute={onToggleMute}
+            onToggleDeafen={onToggleDeafen}
+            onToggleCamera={onToggleCamera}
+            onOpenSettings={onOpenSettings}
+            onStartStream={onStartStream}
+            onStopStream={onStopStream}
           />
-        ) : currentChannel ? (
-          <ChatPanel
-            channel={currentChannel}
-            messages={channelMessages}
-            onSendMessage={onSendMessage}
-          />
-        ) : null}
-      </div>
 
-      {/* Direita: Lista de Membros Reais */}
-      <div className="dashboard__members">
-        <MembersList members={members} />
+          <ChannelSidebar
+            channels={channels}
+            members={members}
+            currentChannelId={currentChannelId}
+            voiceState={voiceState}
+            nickname={nickname}
+            onChannelSelect={onChannelSelect}
+            onVoiceConnect={onVoiceConnect}
+            onVoiceDisconnect={onVoiceDisconnect}
+          />
+        </aside>
+
+        {/* Centro: Chat ou Palco de Voz/Transmissão */}
+        <main className="dashboard__center">
+          {showStage ? (
+            <StageView
+              channelName={currentChannel?.name || 'Canal de Voz'}
+              voiceState={voiceState}
+              streamState={streamState}
+              isLocalStreaming={isLocalStreaming}
+              isCameraEnabled={isCameraEnabled}
+              activeScreenTrack={activeScreenTrack}
+              activeStreams={activeStreams}
+              onStopStream={onStopStream}
+              onStartStream={onStartStream}
+              onOpenStreamQuality={onOpenStreamQuality}
+              onToggleMute={onToggleMute}
+              onToggleDeafen={onToggleDeafen}
+              onToggleCamera={onToggleCamera}
+              onVoiceDisconnect={onVoiceDisconnect}
+              liveKitParticipants={liveKitParticipants}
+              screenVideoRef={screenVideoRef}
+              nickname={nickname}
+              isMuted={isMuted}
+              isDeafened={isDeafened}
+            />
+          ) : currentChannel ? (
+            <ChatPanel
+              channel={currentChannel}
+              messages={channelMessages}
+              onSendMessage={onSendMessage}
+            />
+          ) : null}
+        </main>
+
+        {/* Direita: Lista de Membros Reais (Alternável pelo Topbar) */}
+        {showMembers && (
+          <aside className="dashboard__members">
+            <MembersList members={members} />
+          </aside>
+        )}
       </div>
     </div>
   );

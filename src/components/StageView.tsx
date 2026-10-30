@@ -288,12 +288,12 @@ export default function StageView({
               onClick={onOpenStreamQuality}
               title="Configurar Resolução e FPS"
             >
-              ⚙️ Qualidade (1080p 60fps)
+              OPÇÕES DE VÍDEO // 1080p
             </button>
           )}
           {hasStreams && (isLocalStreaming || effectiveStreams.some((s) => s.isLocal)) ? (
             <button className="stage-view__btn stage-view__btn--stop" onClick={onStopStream} title="Parar Minha Transmissão">
-              Parar Transmissão
+              CORTAR TRANSMISSÃO
             </button>
           ) : (
             hasStreams && onStartStream && (
@@ -302,7 +302,7 @@ export default function StageView({
                 onClick={onStartStream}
                 title="Compartilhar sua tela simultaneamente com os outros participantes"
               >
-                📺 Compartilhar Minha Tela
+                TRANSMITIR MINHA TELA
               </button>
             )
           )}
@@ -326,19 +326,19 @@ export default function StageView({
                     <ParticipantCamera videoTrack={p.videoTrack} className="stage-view__camera-video" />
                     <div className="stage-view__camera-video-overlay">
                       <span className="stage-view__camera-name-badge">{p.name}</span>
-                      {p.isMuted && <span style={{ fontSize: '0.75rem' }}>🔇</span>}
+                      {p.isMuted && <span className="tactical-tag" style={{ color: 'var(--red)' }}>MUT</span>}
                     </div>
                   </div>
                 ) : (
                   <div className="stage-view__camera-placeholder">
                     <div
-                      className="stage-view__camera-avatar"
+                      className="stage-view__camera-avatar chamfer-sm"
                       style={{ background: getAvatarColor(p.name) }}
                     >
                       {getInitials(p.name)}
                     </div>
                     <span className="stage-view__camera-name">{p.name}</span>
-                    {p.isMuted && <span style={{ fontSize: '0.7rem' }}>🔇</span>}
+                    {p.isMuted && <span className="tactical-tag" style={{ color: 'var(--red)', fontSize: '0.5625rem' }}>MUT</span>}
                   </div>
                 )}
               </div>
@@ -434,10 +434,12 @@ export default function StageView({
 
           {/* Mensagem se for o primeiro usuário na chamada */}
           {displayParticipants.length === 1 && (
-            <div className="voice-grid__empty-hint">
-              🎉 <strong>Você conectou na chamada com sucesso!</strong>
+            <div className="voice-grid__empty-hint tactical-bracket">
+              <strong style={{ color: 'var(--accent)', fontFamily: 'var(--font-display)', letterSpacing: '0.08em' }}>
+                // CANAL DE TRANSMISSÃO BLOQUEADO COM SUCESSO
+              </strong>
               <br />
-              Aguardando amigos entrarem na <em>{channelName}</em>... Qualquer pessoa que conectar no servidor poderá entrar nesta sala.
+              Aguardando operadores ingressarem na frequência <em>{channelName}</em>. Qualquer operador conectado a este servidor privado pode participar desta transmissão.
             </div>
           )}
 

@@ -1,126 +1,177 @@
 /* ============================================
-   USER BAR — Shelter
-   Barra inferior do usuário (sidebar esquerda)
+   OPERATOR DECK (SHELTER)
+   Módulo tático de identidade e hardware do operador
    ============================================ */
 
-.user-bar {
-  height: var(--user-bar-height);
-  background: var(--bg-tertiary);
+.operator-deck {
+  background: linear-gradient(180deg, #101612 0%, #080c09 100%);
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--accent);
+  padding: 10px 10px;
   display: flex;
-  align-items: center;
-  padding: 0 8px;
-  gap: 4px;
-  flex-shrink: 0;
-  border-top: 1px solid var(--border-strong);
-}
-
-/* --- User Info --- */
-.user-bar__info {
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
-  flex: 1;
+  margin: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(182, 242, 31, 0.08);
+  position: relative;
+}
+
+/* Moldura com cantos táticos */
+.operator-deck::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
+  pointer-events: none;
+}
+
+/* --- Profile Row --- */
+.operator-deck__profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
-  padding: 4px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background var(--transition-fast);
 }
 
-.user-bar__info:hover {
-  background: var(--bg-modifier-hover);
+.operator-deck__avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
 }
 
-.user-bar__avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-md);
-  background: var(--accent);
+.operator-deck__avatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--accent) 0%, #7db50d 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
   font-size: 0.9375rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--accent-contrast);
-  flex-shrink: 0;
-  position: relative;
+  box-shadow: 0 0 10px rgba(182, 242, 31, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.user-bar__avatar-status {
+.operator-deck__status-indicator {
   position: absolute;
-  bottom: -1px;
-  right: -1px;
+  bottom: -2px;
+  right: -2px;
   width: 10px;
   height: 10px;
-  border-radius: var(--radius-full);
   background: var(--status-online);
-  border: 2px solid var(--bg-tertiary);
+  border: 2px solid #080c09;
+  border-radius: 2px;
+  box-shadow: 0 0 6px var(--status-online);
 }
 
-.user-bar__text {
+.operator-deck__meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.operator-deck__callsign-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
 }
 
-.user-bar__name {
+.operator-deck__badge {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  background: rgba(182, 242, 31, 0.15);
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
+  padding: 1px 4px;
+  border-radius: 1px;
+  line-height: 1;
+}
+
+.operator-deck__callsign {
   font-family: var(--font-display);
   font-size: 0.9375rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
   color: var(--header-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.1;
+  text-transform: uppercase;
 }
 
-.user-bar__tag {
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-  line-height: 1.1;
-}
-
-/* --- Action Buttons --- */
-.user-bar__actions {
+.operator-deck__telemetry {
   display: flex;
-  gap: 2px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
 }
 
-.user-bar__btn {
-  width: 32px;
-  height: 32px;
+.operator-deck__status-text {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* --- Control Buttons --- */
+.operator-deck__controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
+  gap: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(182, 242, 31, 0.08);
+}
+
+.operator-btn {
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm);
-  color: var(--interactive-normal);
-  transition: background var(--transition-fast), color var(--transition-fast);
-  position: relative;
+  background: rgba(18, 24, 19, 0.7);
+  border: 1px solid rgba(182, 242, 31, 0.14);
+  color: var(--text-normal);
+  border-radius: 2px;
+  transition: all var(--transition-fast);
 }
 
-.user-bar__btn:hover {
-  background: var(--bg-modifier-hover);
-  color: var(--interactive-hover);
+.operator-btn:hover {
+  background: rgba(182, 242, 31, 0.12);
+  border-color: var(--accent);
+  color: var(--header-primary);
+  box-shadow: 0 0 8px rgba(182, 242, 31, 0.2);
 }
 
-.user-bar__btn--active {
+.operator-btn--muted {
+  background: rgba(255, 77, 87, 0.12);
+  border-color: rgba(255, 77, 87, 0.4);
   color: var(--red);
 }
 
-.user-bar__btn--active:hover {
-  color: var(--red-hover);
+.operator-btn--muted:hover {
+  background: rgba(255, 77, 87, 0.22);
+  border-color: var(--red);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(255, 77, 87, 0.3);
 }
 
-/* Strikethrough line for muted state */
-.user-bar__btn--active svg .strikethrough {
-  opacity: 1;
+.operator-btn--active {
+  background: rgba(45, 226, 143, 0.16);
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 8px rgba(45, 226, 143, 0.25);
 }
 
-.user-bar__btn svg .strikethrough {
-  opacity: 0;
-}
-
-.user-bar__btn svg {
-  width: 20px;
-  height: 20px;
+.operator-btn svg {
+  width: 16px;
+  height: 16px;
 }

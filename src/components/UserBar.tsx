@@ -31,86 +31,105 @@ export default function UserBar({
   onStopStream,
 }: UserBarProps) {
   return (
-    <div className="user-bar">
-      {/* User Info */}
-      <div className="user-bar__info">
-        <div className="user-bar__avatar">
-          {getInitials(nickname)}
-          <div className="user-bar__avatar-status" />
+    <div className="operator-deck">
+      {/* Operator Identity Card */}
+      <div className="operator-deck__profile">
+        <div className="operator-deck__avatar-wrapper">
+          <div className="operator-deck__avatar chamfer-sm">
+            {getInitials(nickname)}
+          </div>
+          <div className="operator-deck__status-indicator" title="Status: Operacional" />
         </div>
-        <div className="user-bar__text">
-          <div className="user-bar__name">{nickname}</div>
-          <div className="user-bar__tag">Online</div>
+
+        <div className="operator-deck__meta">
+          <div className="operator-deck__callsign-row">
+            <span className="operator-deck__badge">OP</span>
+            <span className="operator-deck__callsign" title={nickname}>{nickname}</span>
+          </div>
+          <div className="operator-deck__telemetry">
+            <span className="operator-deck__status-text">
+              {isVoiceConnected ? 'TX/RX ATIVO' : 'EM ESPERA'}
+            </span>
+            {isVoiceConnected && (
+              <div className="vu-meter" title="Sinal de Áudio Ativo">
+                <span className="vu-meter__bar" />
+                <span className="vu-meter__bar" />
+                <span className="vu-meter__bar" />
+                <span className="vu-meter__bar" />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="user-bar__actions">
+      {/* Hardware / Tactical Controls */}
+      <div className="operator-deck__controls">
         {/* Mute Button */}
         <button
-          className={`user-bar__btn ${isMuted ? 'user-bar__btn--active' : ''}`}
+          className={`operator-btn ${isMuted ? 'operator-btn--muted' : ''}`}
           onClick={onToggleMute}
-          data-tooltip={isMuted ? 'Ativar Microfone' : 'Mutar'}
+          data-tooltip={isMuted ? 'Transmitir Áudio (Desmutar)' : 'Mutar Microfone'}
         >
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-            {isMuted && (
-              <line className="strikethrough" x1="3" y1="3" x2="21" y2="21" stroke="currentColor" strokeWidth="2" />
-            )}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="22" />
+            <line x1="8" y1="22" x2="16" y2="22" />
+            {isMuted && <line x1="2" y1="2" x2="22" y2="22" stroke="var(--red)" strokeWidth="2.5" />}
           </svg>
         </button>
 
         {/* Deafen Button */}
         <button
-          className={`user-bar__btn ${isDeafened ? 'user-bar__btn--active' : ''}`}
+          className={`operator-btn ${isDeafened ? 'operator-btn--muted' : ''}`}
           onClick={onToggleDeafen}
-          data-tooltip={isDeafened ? 'Ativar Som' : 'Desativar Som'}
+          data-tooltip={isDeafened ? 'Reativar Áudio da Sala' : 'Silenciar Tudo'}
         >
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h2v-8H4v-2c0-4.42 3.58-8 8-8s8 3.58 8 8v2h-4v8h2c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z" />
-            {isDeafened && (
-              <line className="strikethrough" x1="3" y1="3" x2="21" y2="21" stroke="currentColor" strokeWidth="2" />
-            )}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3" />
+            {isDeafened && <line x1="2" y1="2" x2="22" y2="22" stroke="var(--red)" strokeWidth="2.5" />}
           </svg>
         </button>
 
-        {/* Camera Button (visible when connected to voice) */}
+        {/* Camera Button (when connected to voice) */}
         {isVoiceConnected && (
           <button
-            className={`user-bar__btn ${isCameraEnabled ? 'user-bar__btn--active' : ''}`}
+            className={`operator-btn ${isCameraEnabled ? 'operator-btn--active' : ''}`}
             onClick={onToggleCamera}
             data-tooltip={isCameraEnabled ? 'Desligar Câmera' : 'Ligar Câmera'}
-            style={isCameraEnabled ? { color: 'var(--green)' } : undefined}
           >
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M23 7l-7 5 7 5V7z" />
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
             </svg>
           </button>
         )}
 
-        {/* Screen Share Button (visible when connected to voice) */}
+        {/* Screenshare Broadcast Button (when connected to voice) */}
         {isVoiceConnected && (
           <button
-            className={`user-bar__btn ${isStreaming ? 'user-bar__btn--active' : ''}`}
+            className={`operator-btn ${isStreaming ? 'operator-btn--active' : ''}`}
             onClick={isStreaming ? onStopStream : onStartStream}
-            data-tooltip={isStreaming ? 'Parar Transmissão' : 'Compartilhar Tela'}
-            style={isStreaming ? { color: 'var(--green)' } : undefined}
+            data-tooltip={isStreaming ? 'Encerrar Transmissão' : 'Transmitir Tela'}
           >
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+              <circle cx="12" cy="10" r="2" fill="currentColor" opacity="0.6" />
             </svg>
           </button>
         )}
 
         {/* Settings Button */}
         <button
-          className="user-bar__btn"
+          className="operator-btn"
           onClick={onOpenSettings}
-          data-tooltip="Configurações"
+          data-tooltip="Terminal de Configuração"
         >
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
         </button>
       </div>
