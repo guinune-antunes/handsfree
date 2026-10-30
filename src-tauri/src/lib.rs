@@ -34,15 +34,33 @@ fn config_path() -> PathBuf {
     path
 }
 
+fn sanitize_host_port(host: &str, default_port: u16) -> (String, u16) {
+    let mut h = host.trim();
+    if let Some(pos) = h.find("://") {
+        h = &h[pos + 3..];
+    }
+    if let Some(pos) = h.find('/') {
+        h = &h[..pos];
+    }
+    if let Some(pos) = h.rfind(':') {
+        let port_part = &h[pos + 1..];
+        if let Ok(p) = port_part.parse::<u16>() {
+            return (h[..pos].to_string(), p);
+        }
+        return (h[..pos].to_string(), default_port);
+    }
+    (h.to_string(), default_port)
+}
+
 /// Valida se o endereço IP:Porta é acessível via TCP
 #[tauri::command]
 async fn validate_connection(host: String, port: u16) -> Result<String, String> {
-    let host_for_task = host.clone();
+    let (clean_host, clean_port) = sanitize_host_port(&host, port);
     let result = tokio::task::spawn_blocking(move || {
         use std::net::ToSocketAddrs;
-        let addrs: Vec<_> = (host_for_task.as_str(), port)
+        let addrs: Vec<_> = (clean_host.as_str(), clean_port)
             .to_socket_addrs()
-            .map_err(|e| format!("Endereço ou hostname inválido: {}", e))?
+            .map_err(|e| format!("Endereço ou hostname inválido '{}': {}", clean_host, e))?
             .collect();
 
         if addrs.is_empty() {
@@ -50,7 +68,7 @@ async fn validate_connection(host: String, port: u16) -> Result<String, String> 
         }
 
         TcpStream::connect_timeout(&addrs[0], Duration::from_secs(5))
-            .map_err(|e| format!("Não foi possível conectar a {}:{} — {}", host_for_task, port, e))
+            .map_err(|e| format!("Não foi possível conectar a {}:{} (TCP 7880). Verifique se as portas estão liberadas no roteador ou firewall do servidor. Detalhes: {}", clean_host, clean_port, e))
     })
     .await
     .map_err(|e| format!("Erro interno: {}", e))?;

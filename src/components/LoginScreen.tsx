@@ -58,29 +58,47 @@ export default function LoginScreen({ onConnect }: LoginScreenProps) {
 
     setIsLoading(true);
 
+    let cleanHost = host.trim();
+    // Remove protocolos comuns caso o usuário tenha colado url completa
+    cleanHost = cleanHost.replace(/^(https?|wss?):\/\//i, '');
+    cleanHost = cleanHost.split('/')[0].trim();
+
+    let effectivePort = parseInt(port, 10);
+    // Se colou IP:PORTA no campo de host, separa e atualiza
+    if (cleanHost.includes(':')) {
+      const parts = cleanHost.split(':');
+      cleanHost = parts[0].trim();
+      const parsed = parseInt(parts[1], 10);
+      if (!isNaN(parsed) && parsed >= 1 && parsed <= 65535) {
+        effectivePort = parsed;
+        setPort(String(parsed));
+      }
+    }
+    setHost(cleanHost);
+
     const config: AppConfig = {
-      host: host.trim(),
-      port: parseInt(port, 10),
+      host: cleanHost,
+      port: effectivePort,
       nickname: nickname.trim(),
     };
 
     try {
-      // Validate connection via Rust backend
+      // Valida se o IP e a porta TCP 7880 respondem
       await invoke('validate_connection', {
         host: config.host,
         port: config.port,
       });
 
-      // Save config for next time
+      // Salva configuração válida
       await invoke('save_config', { config });
 
-      // Transition to dashboard
+      // Avança para o painel
       onConnect(config);
     } catch (err) {
       const message =
         typeof err === 'string'
           ? err
-          : 'Não foi possível conectar ao servidor. Verifique o endereço e tente novamente.';
+          : `Não foi possível conectar a ${config.host}:${config.port}. Verifique se as portas 7880 e 3001 estão abertas no roteador/firewall do servidor.`;
       setError(message);
     } finally {
       setIsLoading(false);
