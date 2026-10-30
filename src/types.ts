@@ -1,5 +1,5 @@
 /* ============================================
-   TYPES — Discord Clone Leve
+   TYPES — Shelter
    ============================================ */
 
 export type Screen = 'login' | 'dashboard';

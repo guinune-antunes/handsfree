@@ -1,5 +1,5 @@
 /* ============================================
-   DATA — Discord Clone Leve
+   DATA — Shelter
    Estrutura limpa sem dados fictícios.
    Apenas canais padrão e helpers.
    ============================================ */

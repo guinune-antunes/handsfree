@@ -12,7 +12,7 @@ export default function MembersList({ members }: MembersListProps) {
 
   // Generate avatar color from name
   const getAvatarColor = (name: string): string => {
-    const colors = ['#5865f2', '#3ba55d', '#faa81a', '#ed4245', '#eb459e', '#9b59b6', '#e67e22', '#1abc9c'];
+    const colors = ['#2f8f4e', '#1f9e8a', '#6f9a12', '#b8860b', '#3b7d6e', '#4f7d2a', '#2e8b8b', '#8a6d1d'];
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
       hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -57,7 +57,7 @@ export default function MembersList({ members }: MembersListProps) {
           </svg>
         )}
         {member.hasCamera && (
-          <svg className="member-item__icon member-item__icon--camera" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#23a55a' }}>
+          <svg className="member-item__icon member-item__icon--camera" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--green)' }}>
             <title>Câmera Ligada</title>
             <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
           </svg>

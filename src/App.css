@@ -1,74 +1,84 @@
 :root {
   /* ============================================
-     DISCORD CLONE LEVE — Design System
+     SHELTER — Design System
+     Preto industrial + verde-limão (identidade da logo)
      ============================================ */
 
-  /* --- Background Colors --- */
-  --bg-primary: #36393f;
-  --bg-secondary: #2f3136;
-  --bg-tertiary: #202225;
-  --bg-modifier-hover: rgba(79, 84, 92, 0.16);
-  --bg-modifier-active: rgba(79, 84, 92, 0.24);
-  --bg-modifier-selected: rgba(79, 84, 92, 0.32);
-  --bg-floating: #18191c;
+  /* --- Background Colors (preto levemente esverdeado) --- */
+  --bg-primary: #0d110f;
+  --bg-secondary: #090c0a;
+  --bg-tertiary: #050706;
+  --bg-surface: #121813;
+  --bg-modifier-hover: rgba(182, 242, 31, 0.06);
+  --bg-modifier-active: rgba(182, 242, 31, 0.10);
+  --bg-modifier-selected: rgba(182, 242, 31, 0.12);
+  --bg-floating: #060807;
+
+  /* --- Borders --- */
+  --border: rgba(182, 242, 31, 0.10);
+  --border-strong: rgba(182, 242, 31, 0.28);
 
   /* --- Text Colors --- */
-  --text-normal: #dcddde;
-  --text-muted: #72767d;
-  --text-link: #00aff4;
-  --header-primary: #ffffff;
-  --header-secondary: #b9bbbe;
+  --text-normal: #cdd8c9;
+  --text-muted: #667563;
+  --text-link: #b6f21f;
+  --header-primary: #f1f8ec;
+  --header-secondary: #9db098;
 
   /* --- Brand Colors --- */
-  --blurple: #5865f2;
-  --blurple-hover: #4752c4;
-  --blurple-active: #3c45a5;
-  --green: #3ba55d;
-  --green-hover: #2d7d46;
-  --red: #ed4245;
-  --red-hover: #c03537;
-  --yellow: #faa81a;
-  --grey: #747f8d;
+  --accent: #b6f21f;
+  --accent-hover: #cdff4d;
+  --accent-active: #8fc415;
+  --accent-contrast: #0a0f06;
+  --accent-glow: rgba(182, 242, 31, 0.35);
+  --cyan: #19e3d0;
+  --green: #2de28f;
+  --green-hover: #1fb870;
+  --red: #ff4d57;
+  --red-hover: #d93a44;
+  --yellow: #ffc933;
+  --grey: #5d6b5a;
 
   /* --- Status Colors --- */
-  --status-online: #3ba55d;
-  --status-idle: #faa81a;
-  --status-dnd: #ed4245;
-  --status-offline: #747f8d;
+  --status-online: #2de28f;
+  --status-idle: #ffc933;
+  --status-dnd: #ff4d57;
+  --status-offline: #5d6b5a;
 
   /* --- Interactive States --- */
-  --interactive-normal: #b9bbbe;
-  --interactive-hover: #dcddde;
+  --interactive-normal: #8fa28a;
+  --interactive-hover: #d6e6cf;
   --interactive-active: #ffffff;
-  --interactive-muted: #4f545c;
+  --interactive-muted: #3a4637;
 
   /* --- Input --- */
-  --input-bg: #40444b;
-  --input-border: rgba(0, 0, 0, 0.3);
-  --input-placeholder: #72767d;
+  --input-bg: #0a0e0b;
+  --input-border: rgba(182, 242, 31, 0.14);
+  --input-placeholder: #566453;
 
   /* --- Channels --- */
-  --channel-default: #8e9297;
-  --channel-hover: #dcddde;
+  --channel-default: #77886f;
+  --channel-hover: #d6e6cf;
   --channel-selected: #ffffff;
 
   /* --- Elevation / Shadows --- */
-  --elevation-low: 0 1px 0 rgba(4, 4, 5, 0.2), 0 1.5px 0 rgba(6, 6, 7, 0.05), 0 2px 0 rgba(4, 4, 5, 0.05);
-  --elevation-medium: 0 4px 4px rgba(0, 0, 0, 0.16);
-  --elevation-high: 0 8px 16px rgba(0, 0, 0, 0.24);
+  --elevation-low: 0 1px 0 rgba(0, 0, 0, 0.5);
+  --elevation-medium: 0 4px 10px rgba(0, 0, 0, 0.4);
+  --elevation-high: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border);
 
   /* --- Spacing --- */
   --sidebar-width: 240px;
   --members-width: 240px;
-  --user-bar-height: 52px;
+  --user-bar-height: 56px;
   --header-height: 48px;
   --chat-input-height: 68px;
 
-  /* --- Border Radius --- */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
+  /* --- Border Radius (cantos mais retos, estilo cofre/industrial) --- */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
   --radius-full: 50%;
+  --chamfer: 8px;
 
   /* --- Transitions --- */
   --transition-fast: 0.15s ease;
@@ -76,8 +86,9 @@
   --transition-slow: 0.4s ease;
 
   /* --- Typography --- */
-  --font-primary: 'Inter', 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-mono: 'Consolas', 'Andale Mono WT', 'Andale Mono', 'Lucida Console', monospace;
+  --font-primary: 'Inter', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-display: 'Rajdhani', 'Inter', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', 'Andale Mono', 'Lucida Console', monospace;
 
   font-family: var(--font-primary);
   font-size: 16px;
@@ -149,33 +160,73 @@ ul, ol {
 }
 
 /* ============================================
-   CUSTOM SCROLLBAR (Discord style)
+   CUSTOM SCROLLBAR (verde Shelter)
    ============================================ */
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
+  background: rgba(182, 242, 31, 0.22);
   border-radius: var(--radius-sm);
   min-height: 40px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #1a1b1e;
+  background: rgba(182, 242, 31, 0.45);
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--bg-tertiary) var(--bg-secondary);
+  scrollbar-color: rgba(182, 242, 31, 0.3) transparent;
+}
+
+::selection {
+  background: rgba(182, 242, 31, 0.3);
+  color: #fff;
+}
+
+/* ============================================
+   SHELTER — Componentes de identidade
+   ============================================ */
+
+/* Faixa de alerta industrial (hazard) */
+.hazard-stripe {
+  height: 6px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--yellow) 0 8px,
+    #11140f 8px 16px
+  );
+  opacity: 0.85;
+}
+
+/* Selo de versão (ex: v0.1.1 BETA) */
+.version-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.version-badge__tag {
+  padding: 1px 6px;
+  border: 1px solid var(--border-strong);
+  color: var(--accent);
+  text-transform: uppercase;
+  font-size: 0.5938rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
 }
 
 /* ============================================
@@ -277,9 +328,9 @@ ul, ol {
 }
 
 @keyframes statusPulse {
-  0% { box-shadow: 0 0 0 0 rgba(59, 165, 93, 0.5); }
-  70% { box-shadow: 0 0 0 6px rgba(59, 165, 93, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(59, 165, 93, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(45, 226, 143, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(45, 226, 143, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(45, 226, 143, 0); }
 }
 
 @keyframes spin {

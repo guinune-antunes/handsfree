@@ -17,12 +17,23 @@ pub struct AppConfig {
 
 /// Retorna o caminho do arquivo de configuração
 fn config_path() -> PathBuf {
-    let mut path = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
-    path.push("discord-clone-leve");
+    let base = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
+    let mut path = base.clone();
+    path.push("shelter");
     fs::create_dir_all(&path).ok();
     path.push("config.json");
+
+    // Migração: versões anteriores (antes do Shelter) salvavam em "discord-clone-leve"
+    if !path.exists() {
+        let legacy = base.join("discord-clone-leve").join("config.json");
+        if legacy.exists() {
+            fs::copy(&legacy, &path).ok();
+        }
+    }
+
     path
 }
+
 
 /// Valida se o endereço IP:Porta é acessível via TCP
 /// Retorna Ok(()) se conectou, Err(mensagem) caso contrário

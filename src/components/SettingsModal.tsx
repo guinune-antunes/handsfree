@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { APP_VERSION_BASE, APP_CHANNEL } from '../config/version';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onStartStream: () => void;
+  /** Consulta o GitHub; retorna true se houver atualização (o modal de atualização abre sozinho). */
+  onCheckUpdate?: () => Promise<boolean>;
 }
 
 interface MediaDevice {
@@ -13,8 +16,9 @@ interface MediaDevice {
   kind: MediaDeviceKind;
 }
 
-export default function SettingsModal({ isOpen, onClose, onStartStream }: SettingsModalProps) {
+export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckUpdate }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState('voice-video');
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'latest' | 'found'>('idle');
   const [devices, setDevices] = useState<MediaDevice[]>([]);
   const [selectedMic, setSelectedMic] = useState('');
   const [selectedSpeaker, setSelectedSpeaker] = useState('');
@@ -158,6 +162,13 @@ export default function SettingsModal({ isOpen, onClose, onStartStream }: Settin
     onClose();
   };
 
+  const handleCheckUpdate = async () => {
+    if (!onCheckUpdate) return;
+    setUpdateStatus('checking');
+    const found = await onCheckUpdate();
+    setUpdateStatus(found ? 'found' : 'latest');
+  };
+
   if (!isOpen) return null;
 
   const microphones = devices.filter((d) => d.kind === 'audioinput');
@@ -175,6 +186,12 @@ export default function SettingsModal({ isOpen, onClose, onStartStream }: Settin
             onClick={() => setActiveTab('voice-video')}
           >
             Voz & Vídeo
+          </div>
+          <div
+            className={`settings-modal__nav-item ${activeTab === 'about' ? 'settings-modal__nav-item--active' : ''}`}
+            onClick={() => setActiveTab('about')}
+          >
+            Sobre o Shelter
           </div>
           <div className="settings-modal__nav-separator" />
           <div className="settings-modal__nav-item" style={{ color: 'var(--red)', fontSize: '0.8125rem' }}>
@@ -334,6 +351,51 @@ export default function SettingsModal({ isOpen, onClose, onStartStream }: Settin
                   </svg>
                   Compartilhar Tela
                 </button>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'about' && (
+            <>
+              <h2 className="settings-modal__section-title">Sobre o Shelter</h2>
+
+              <div className="settings-about">
+                <img className="settings-about__logo" src="/shelter-logo.png" alt="Shelter" />
+                <div className="settings-about__info">
+                  <div className="settings-about__name">Shelter</div>
+                  <div className="version-badge">
+                    Versão {APP_VERSION_BASE}
+                    {APP_CHANNEL && <span className="version-badge__tag">{APP_CHANNEL}</span>}
+                  </div>
+                  <p className="settings-field__description">
+                    Voz, vídeo e transmissão de tela com baixa latência, no seu próprio servidor.
+                  </p>
+                </div>
+              </div>
+
+              <div className="settings-divider" />
+
+              <div className="settings-field">
+                <label className="settings-field__label">Atualizações</label>
+                <p className="settings-field__description" style={{ marginTop: 0, marginBottom: 8 }}>
+                  O Shelter verifica automaticamente no GitHub se há uma versão nova sempre que você conecta ao servidor.
+                </p>
+                <button
+                  id="settings-check-update"
+                  className="settings-share-btn"
+                  onClick={handleCheckUpdate}
+                  disabled={updateStatus === 'checking'}
+                >
+                  {updateStatus === 'checking' ? 'Verificando...' : 'Verificar atualizações'}
+                </button>
+                {updateStatus === 'latest' && (
+                  <p className="settings-about__status settings-about__status--ok">
+                    ✓ Você já está na versão mais recente.
+                  </p>
+                )}
+                {updateStatus === 'found' && (
+                  <p className="settings-about__status">Nova versão encontrada!</p>
+                )}
               </div>
             </>
           )}

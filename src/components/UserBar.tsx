@@ -81,7 +81,7 @@ export default function UserBar({
             className={`user-bar__btn ${isCameraEnabled ? 'user-bar__btn--active' : ''}`}
             onClick={onToggleCamera}
             data-tooltip={isCameraEnabled ? 'Desligar Câmera' : 'Ligar Câmera'}
-            style={isCameraEnabled ? { color: 'var(--green, #3ba55d)' } : undefined}
+            style={isCameraEnabled ? { color: 'var(--green)' } : undefined}
           >
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
@@ -95,7 +95,7 @@ export default function UserBar({
             className={`user-bar__btn ${isStreaming ? 'user-bar__btn--active' : ''}`}
             onClick={isStreaming ? onStopStream : onStartStream}
             data-tooltip={isStreaming ? 'Parar Transmissão' : 'Compartilhar Tela'}
-            style={isStreaming ? { color: 'var(--green, #3ba55d)' } : undefined}
+            style={isStreaming ? { color: 'var(--green)' } : undefined}
           >
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" />

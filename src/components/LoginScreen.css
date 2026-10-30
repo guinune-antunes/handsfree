@@ -1,6 +1,6 @@
 /* ============================================
-   LOGIN SCREEN — Discord Clone Leve
-   Tela de conexão por IP com visual glassmorphism
+   LOGIN SCREEN — Shelter
+   Tela de conexão por IP — visual industrial/cofre
    ============================================ */
 
 .login-screen {
@@ -9,52 +9,44 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #1a1a2e 100%);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
   position: relative;
   overflow: hidden;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 38%, rgba(182, 242, 31, 0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 85% 100%, rgba(25, 227, 208, 0.06) 0%, transparent 70%),
+    linear-gradient(180deg, #070a08 0%, #0b100c 100%);
 }
 
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* Floating particles effect */
-.login-screen::before,
-.login-screen::after {
+/* Grade técnica ao fundo */
+.login-screen::before {
   content: '';
   position: absolute;
-  border-radius: 50%;
-  opacity: 0.08;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(182, 242, 31, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(182, 242, 31, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, #000 20%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, #000 20%, transparent 85%);
   pointer-events: none;
 }
 
-.login-screen::before {
-  width: 600px;
-  height: 600px;
-  background: var(--blurple);
-  top: -200px;
-  right: -200px;
-  animation: floatOrb 20s ease-in-out infinite;
-}
-
+/* Linha de varredura sutil */
 .login-screen::after {
-  width: 400px;
-  height: 400px;
-  background: #3ba55d;
-  bottom: -100px;
-  left: -100px;
-  animation: floatOrb 25s ease-in-out infinite reverse;
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 120px;
+  top: -120px;
+  background: linear-gradient(180deg, transparent, rgba(182, 242, 31, 0.05), transparent);
+  animation: scanLine 7s linear infinite;
+  pointer-events: none;
 }
 
-@keyframes floatOrb {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(30px, -40px) scale(1.05); }
-  50% { transform: translate(-20px, 20px) scale(0.95); }
-  75% { transform: translate(40px, 10px) scale(1.02); }
+@keyframes scanLine {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(100vh + 240px)); }
 }
 
 /* --- Login Card --- */
@@ -62,61 +54,76 @@
   position: relative;
   z-index: 1;
   width: 440px;
-  padding: 40px;
-  border-radius: var(--radius-lg);
-  background: rgba(47, 49, 54, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  max-height: calc(100vh - 32px);
+  background: rgba(10, 14, 11, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-strong);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 0 80px rgba(88, 101, 242, 0.08);
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 24px 64px rgba(0, 0, 0, 0.6),
+    0 0 90px rgba(182, 242, 31, 0.10);
+  /* cantos chanfrados (estilo placa industrial) */
+  clip-path: polygon(
+    var(--chamfer) 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer),
+    100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%,
+    var(--chamfer) 100%, 0 calc(100% - var(--chamfer)), 0 var(--chamfer)
+  );
   animation: fadeInScale 0.5s ease forwards;
+  overflow-y: auto;
+}
+
+.login-card__inner {
+  padding: 28px 40px 20px;
 }
 
 .login-card__header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .login-card__logo {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 16px;
-  background: var(--blurple);
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  box-shadow: 0 4px 16px rgba(88, 101, 242, 0.3);
-}
-
-.login-card__logo svg {
-  width: 36px;
-  height: 36px;
-  fill: white;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 12px;
+  display: block;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 36px rgba(182, 242, 31, 0.28);
+  user-select: none;
 }
 
 .login-card__title {
-  font-size: 1.5rem;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--header-primary);
-  margin-bottom: 4px;
-  letter-spacing: -0.02em;
+  margin-bottom: 2px;
+  letter-spacing: 0.32em;
+  padding-left: 0.32em; /* compensa o letter-spacing para centralizar */
+  text-transform: uppercase;
 }
 
 .login-card__subtitle {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--text-muted);
   line-height: 1.4;
+  letter-spacing: 0.04em;
+}
+
+.login-card__footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
 }
 
 /* --- Form Fields --- */
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 }
 
 .form-group {
@@ -126,12 +133,17 @@
 }
 
 .form-group__label {
-  font-size: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.12em;
   color: var(--header-secondary);
   transition: color var(--transition-fast);
+}
+
+.form-group:focus-within .form-group__label {
+  color: var(--accent);
 }
 
 .form-group--error .form-group__label {
@@ -146,21 +158,22 @@
   width: 100%;
   padding: 10px 12px;
   border-radius: var(--radius-sm);
-  background: var(--bg-tertiary);
+  background: var(--input-bg);
   color: var(--text-normal);
   font-size: 1rem;
-  border: 1px solid transparent;
+  border: 1px solid var(--input-border);
+  border-left: 3px solid var(--interactive-muted);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .form-group__input:focus {
-  border-color: var(--blurple);
-  box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(182, 242, 31, 0.12), 0 0 14px rgba(182, 242, 31, 0.10);
 }
 
 .form-group--error .form-group__input {
   border-color: var(--red);
-  box-shadow: 0 0 0 3px rgba(237, 66, 69, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 77, 87, 0.15);
 }
 
 .form-group__input::placeholder {
@@ -179,26 +192,33 @@
   width: 100%;
   padding: 12px;
   border-radius: var(--radius-sm);
-  background: var(--blurple);
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   cursor: pointer;
   border: none;
   transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
   position: relative;
   overflow: hidden;
   margin-top: 4px;
+  clip-path: polygon(
+    var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)),
+    calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer)
+  );
 }
 
 .login-btn:hover:not(:disabled) {
-  background: var(--blurple-hover);
-  box-shadow: 0 4px 16px rgba(88, 101, 242, 0.3);
+  background: var(--accent-hover);
+  box-shadow: 0 0 24px var(--accent-glow);
   transform: translateY(-1px);
 }
 
 .login-btn:active:not(:disabled) {
-  background: var(--blurple-active);
+  background: var(--accent-active);
   transform: translateY(0);
 }
 
@@ -218,8 +238,8 @@
   transform: translate(-50%, -50%);
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 2px solid rgba(10, 15, 6, 0.3);
+  border-top-color: var(--accent-contrast);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -227,8 +247,9 @@
 /* --- Error Message --- */
 .login-error {
   padding: 10px 14px;
-  background: rgba(237, 66, 69, 0.1);
-  border: 1px solid rgba(237, 66, 69, 0.3);
+  background: rgba(255, 77, 87, 0.08);
+  border: 1px solid rgba(255, 77, 87, 0.3);
+  border-left: 3px solid var(--red);
   border-radius: var(--radius-sm);
   color: var(--red);
   font-size: 0.875rem;

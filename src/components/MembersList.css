@@ -1,5 +1,5 @@
 /* ============================================
-   MEMBERS LIST — Discord Clone Leve
+   MEMBERS LIST — Shelter
    Barra lateral direita com lista de membros
    ============================================ */
 
@@ -7,6 +7,7 @@
   width: var(--members-width);
   height: 100%;
   background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -19,15 +20,16 @@
   padding: 0 16px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.24);
+  border-bottom: 1px solid var(--border-strong);
   flex-shrink: 0;
 }
 
 .members-list__title {
-  font-size: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.14em;
   color: var(--channel-default);
 }
 
@@ -41,10 +43,11 @@
 /* --- Section Header --- */
 .members-section__title {
   padding: 16px 8px 4px;
-  font-size: 0.6875rem;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.14em;
   color: var(--channel-default);
 }
 
@@ -76,7 +79,7 @@
 .member-item__avatar {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,7 +99,7 @@
 }
 
 .member-item:hover .member-item__status-dot {
-  border-color: #35383e; /* slightly lighter on hover */
+  border-color: var(--bg-surface); /* slightly lighter on hover */
 }
 
 .member-item__status-dot--online {
@@ -123,8 +126,10 @@
 }
 
 .member-item__name {
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--channel-default);
   white-space: nowrap;
   overflow: hidden;
@@ -165,5 +170,5 @@
 }
 
 .member-item__icon--streaming {
-  color: var(--blurple);
+  color: var(--accent);
 }

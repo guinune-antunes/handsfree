@@ -1,5 +1,5 @@
 /* ============================================
-   CHANNEL SIDEBAR — Discord Clone Leve
+   CHANNEL SIDEBAR — Shelter
    Barra lateral esquerda com canais de texto/voz
    ============================================ */
 
@@ -7,6 +7,7 @@
   width: var(--sidebar-width);
   height: 100%;
   background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -16,39 +17,33 @@
 /* --- Server Header --- */
 .channel-sidebar__header {
   height: var(--header-height);
-  padding: 0 16px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.24);
-  cursor: pointer;
-  transition: background var(--transition-fast);
+  gap: 8px;
+  border-bottom: 1px solid var(--border-strong);
+  background: linear-gradient(90deg, rgba(182, 242, 31, 0.07), transparent 70%);
   flex-shrink: 0;
 }
 
-.channel-sidebar__header:hover {
-  background: var(--bg-modifier-hover);
+.channel-sidebar__mark {
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px rgba(182, 242, 31, 0.35));
 }
 
 .channel-sidebar__server-name {
-  font-size: 0.9375rem;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
   font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--header-primary);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.channel-sidebar__header-icon {
-  width: 18px;
-  height: 18px;
-  color: var(--text-muted);
+.channel-sidebar__version {
+  margin-left: auto;
   flex-shrink: 0;
-  transition: transform var(--transition-fast);
-}
-
-.channel-sidebar__header:hover .channel-sidebar__header-icon {
-  color: var(--interactive-hover);
 }
 
 /* --- Channel List --- */
@@ -85,10 +80,11 @@
 }
 
 .channel-section__title {
-  font-size: 0.6875rem;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.14em;
   color: var(--channel-default);
   flex: 1;
 }
@@ -116,8 +112,9 @@
 }
 
 .channel-item--active {
-  background: var(--bg-modifier-selected);
+  background: linear-gradient(90deg, rgba(182, 242, 31, 0.14), rgba(182, 242, 31, 0.02));
   color: var(--channel-selected);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
 .channel-item__icon {
@@ -136,18 +133,22 @@
 }
 
 .channel-item__hash {
-  font-size: 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
   font-weight: 500;
   opacity: 0.5;
 }
 
 .channel-item--active .channel-item__hash {
-  opacity: 0.8;
+  opacity: 1;
+  color: var(--accent);
 }
 
 .channel-item__name {
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -207,8 +208,8 @@
 /* --- Voice Connected Banner --- */
 .voice-connected {
   padding: 8px 12px;
-  background: rgba(59, 165, 93, 0.08);
-  border-top: 1px solid rgba(59, 165, 93, 0.2);
+  background: rgba(182, 242, 31, 0.06);
+  border-top: 1px solid var(--border-strong);
   flex-shrink: 0;
 }
 
@@ -220,16 +221,19 @@
 }
 
 .voice-connected__status {
-  font-size: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--green);
+  letter-spacing: 0.12em;
+  color: var(--accent);
   text-transform: uppercase;
 }
 
 .voice-connected__pulse {
   width: 8px;
   height: 8px;
-  background: var(--green);
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
   border-radius: var(--radius-full);
   animation: pulse 2s ease-in-out infinite;
 }
@@ -250,7 +254,7 @@
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--border);
   color: var(--text-muted);
   transition: background var(--transition-fast), color var(--transition-fast);
 }

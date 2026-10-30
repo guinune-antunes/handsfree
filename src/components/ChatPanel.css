@@ -1,5 +1,5 @@
 /* ============================================
-   CHAT PANEL — Discord Clone Leve
+   CHAT PANEL — Shelter
    Painel central de mensagens
    ============================================ */
 
@@ -19,7 +19,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.24);
+  border-bottom: 1px solid var(--border-strong);
   flex-shrink: 0;
 }
 
@@ -30,7 +30,10 @@
 }
 
 .chat-panel__header-name {
-  font-size: 1rem;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   font-weight: 700;
   color: var(--header-primary);
 }
@@ -74,7 +77,8 @@
   width: 68px;
   height: 68px;
   background: var(--bg-modifier-hover);
-  border-radius: var(--radius-full);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,14 +131,14 @@
 .message__avatar {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-full);
-  background: var(--blurple);
+  border-radius: var(--radius-md);
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.875rem;
   font-weight: 700;
-  color: white;
+  color: var(--accent-contrast);
   cursor: pointer;
   transition: opacity var(--transition-fast);
 }
@@ -207,6 +211,9 @@
   background: var(--input-bg);
   border-radius: var(--radius-md);
   padding: 2px 4px 2px 16px;
+  border: 1px solid var(--input-border);
+  border-left: 3px solid var(--accent);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   gap: 4px;
   min-height: 44px;
 }
@@ -267,4 +274,9 @@
 .chat-empty__icon {
   font-size: 3rem;
   opacity: 0.3;
+}
+
+.chat-input:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(182, 242, 31, 0.10);
 }

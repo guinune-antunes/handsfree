@@ -1,5 +1,5 @@
 /* ============================================
-   LIVEKIT CONFIG — Discord Clone Leve
+   LIVEKIT CONFIG — Shelter
    ============================================ */
 
 /**

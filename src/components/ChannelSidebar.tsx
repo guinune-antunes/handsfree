@@ -1,5 +1,7 @@
 import type { Channel, Member, VoiceState } from '../types';
 import { getInitials } from '../data/mockData';
+import { APP_VERSION_BASE, APP_CHANNEL } from '../config/version';
+import ShelterMark from './ShelterMark';
 import './ChannelSidebar.css';
 
 interface ChannelSidebarProps {
@@ -43,10 +45,12 @@ export default function ChannelSidebar({
     <div className="channel-sidebar">
       {/* Server Header */}
       <div className="channel-sidebar__header">
-        <span className="channel-sidebar__server-name">Discord Clone Leve</span>
-        <svg className="channel-sidebar__header-icon" viewBox="0 0 18 18" fill="currentColor">
-          <path d="M4.5 7.5L9 12l4.5-4.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-        </svg>
+        <ShelterMark size={26} className="channel-sidebar__mark" />
+        <span className="channel-sidebar__server-name">Shelter</span>
+        <span className="version-badge channel-sidebar__version">
+          v{APP_VERSION_BASE}
+          {APP_CHANNEL && <span className="version-badge__tag">{APP_CHANNEL}</span>}
+        </span>
       </div>
 
       {/* Channel List */}

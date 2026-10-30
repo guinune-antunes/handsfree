@@ -1,16 +1,33 @@
-# 🖥️ Discord Clone Leve — Cliente Desktop
+<p align="center">
+  <img src="public/shelter-banner.png" alt="Shelter" width="640" />
+</p>
+
+# Shelter — Cliente Desktop `v0.1.1 (beta)`
 
 Aplicativo nativo leve para Windows com chat de texto, canais de voz de baixa latência e compartilhamento de tela em tempo real via LiveKit WebRTC e Tauri v2.
+
+---
+
+## 🔄 Atualizações automáticas
+
+Sempre que o usuário **conecta ao servidor**, o Shelter consulta as *Releases* do GitHub (`guinune-antunes/handsfree`) e avisa se existe uma versão mais nova. Também dá para verificar manualmente em **Configurações → Sobre o Shelter**.
+
+Para publicar uma atualização:
+1. Aumente a versão em `package.json` (ex.: `0.1.2-beta`) e em `src-tauri/tauri.conf.json` / `src-tauri/Cargo.toml` (ex.: `0.1.2`).
+2. Gere o instalador e crie uma **Release** no GitHub com a tag `v0.1.2-beta` (marque *pre-release* para betas) anexando o `.exe` do instalador.
+3. Quem estiver em uma versão menor vê o aviso com as notas da release e o botão **Baixar atualização**.
+
+> Versões *beta* recebem avisos de novas betas e de versões estáveis; versões estáveis só recebem avisos de versões estáveis.
 
 ---
 
 ## 🚀 Instalação Rápida no Computador do Cliente
 
 ### ⚡ Opção 1: Instalador Executável Standalone (Recomendado)
-Basta dar um duplo clique no arquivo **`Instalador-Discord-Clone.exe`**!
+Basta dar um duplo clique no arquivo **`Instalador-Shelter.exe`**!
 - ✅ **Não precisa instalar Node.js, Rust nem Git**;
 - 🎨 Interface visual animada durante a instalação;
-- 📌 Cria automaticamente o atalho oficial **"Discord Clone Leve"** na sua Área de Trabalho;
+- 📌 Cria automaticamente o atalho oficial **"Shelter"** na sua Área de Trabalho;
 - 🚀 Inicia o aplicativo diretamente após a instalação.
 
 ---
@@ -29,7 +46,7 @@ O script analisa automaticamente 10 camadas do sistema:
 7. Arquivos de configuração salvos
 8. Teste de conectividade real com o servidor (Porta 7880 SFU e 3001 Token Server)
 9. Histórico de falhas e crashes no Visualizador de Eventos do Windows
-10. Geração e abertura automática do relatório `DIAGNOSTICO_DISCORD_CLONE.txt`
+10. Geração e abertura automática do relatório `DIAGNOSTICO_SHELTER.txt`
 
 ---
 

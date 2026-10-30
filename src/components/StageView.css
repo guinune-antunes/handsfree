@@ -1,5 +1,5 @@
 /* ============================================
-   STAGE VIEW — Discord Clone Leve
+   STAGE VIEW — Shelter
    Palco de transmissão (tela + webcams)
    ============================================ */
 
@@ -7,7 +7,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #0e0e10;
+  background: #050706;
   height: 100%;
   overflow: hidden;
 }
@@ -20,7 +20,7 @@
   align-items: center;
   justify-content: space-between;
   background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -74,25 +74,25 @@
 }
 
 .stage-view__btn--primary {
-  background: var(--green, #23a55a);
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--accent-contrast);
 }
 
 .stage-view__btn--primary:hover {
-  background: #1b8748;
+  background: var(--accent-hover);
 }
 
 .stage-view__btn--active-cam {
-  background: var(--green, #23a55a);
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--accent-contrast);
 }
 
 .stage-view__btn--active-cam:hover {
-  background: #1b8748;
+  background: var(--accent-hover);
 }
 
 .stage-view__btn--secondary {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border);
   color: var(--text-normal);
 }
 
@@ -119,7 +119,7 @@
   width: 160px;
   height: 90px;
   border-radius: var(--radius-md);
-  background: #1a1a2e;
+  background: #0b100c;
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
@@ -129,7 +129,7 @@
 }
 
 .stage-view__camera-card:hover {
-  border-color: var(--blurple);
+  border-color: var(--accent);
   transform: scale(1.02);
 }
 
@@ -139,7 +139,7 @@
 
 .stage-view__camera-card--speaking {
   border-color: var(--green);
-  box-shadow: 0 0 8px rgba(59, 165, 93, 0.4);
+  box-shadow: 0 0 8px rgba(45, 226, 143, 0.4);
 }
 
 .stage-view__speaking-indicator {
@@ -320,7 +320,7 @@
   padding: 32px 24px 24px 24px;
   gap: 20px;
   overflow-y: auto;
-  background: radial-gradient(circle at center, #1e1f22 0%, #111214 100%);
+  background: radial-gradient(circle at center, rgba(182, 242, 31, 0.05) 0%, #060908 70%);
 }
 
 .voice-grid__participants {
@@ -337,8 +337,8 @@
 .voice-card {
   width: 200px;
   height: 180px;
-  background: #2b2d31;
-  border-radius: 12px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -351,18 +351,18 @@
 
 .voice-card:hover {
   transform: translateY(-2px);
-  background: #313338;
+  background: #18201a;
 }
 
 .voice-card--speaking {
-  border-color: #23a55a;
-  box-shadow: 0 0 16px rgba(35, 165, 90, 0.5);
+  border-color: var(--accent);
+  box-shadow: 0 0 18px rgba(182, 242, 31, 0.45);
 }
 
 .voice-card__avatar {
   width: 72px;
   height: 72px;
-  border-radius: 50%;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -376,7 +376,7 @@
 .voice-card__name {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #f2f3f5;
+  color: var(--header-primary);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -398,7 +398,7 @@
 
 .voice-grid__empty-hint {
   text-align: center;
-  color: #949ba4;
+  color: var(--text-muted);
   font-size: 0.95rem;
   max-width: 500px;
   line-height: 1.5;
@@ -412,10 +412,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #18191c;
+  background: var(--bg-floating);
+  border: 1px solid var(--border-strong);
   padding: 10px 24px;
   border-radius: 36px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 24px rgba(182, 242, 31, 0.06);
 }
 
 .voice-grid__ctrl-btn {
@@ -423,8 +424,8 @@
   height: 48px;
   border-radius: 50%;
   border: none;
-  background: #2b2d31;
-  color: #f2f3f5;
+  background: var(--bg-surface);
+  color: var(--header-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -433,37 +434,37 @@
 }
 
 .voice-grid__ctrl-btn:hover {
-  background: #35373c;
+  background: #1c261d;
   transform: scale(1.06);
 }
 
 .voice-grid__ctrl-btn--active {
-  background: #ed4245;
+  background: var(--red);
   color: white;
 }
 
 .voice-grid__ctrl-btn--active:hover {
-  background: #da373c;
+  background: var(--red-hover);
 }
 
 .voice-grid__ctrl-btn--active-green {
-  background: #23a55a;
-  color: white;
+  background: var(--accent);
+  color: var(--accent-contrast);
 }
 
 .voice-grid__ctrl-btn--active-green:hover {
-  background: #1b8748;
+  background: var(--accent-hover);
 }
 
 .voice-grid__ctrl-btn--disconnect {
-  background: #ed4245;
+  background: var(--red);
   color: white;
   width: 52px;
   height: 52px;
 }
 
 .voice-grid__ctrl-btn--disconnect:hover {
-  background: #da373c;
+  background: var(--red-hover);
   transform: scale(1.08);
 }
 
@@ -523,7 +524,7 @@
   width: 100%;
   height: 100%;
   position: relative;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -532,7 +533,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
 }
 
 .voice-card__video-overlay {
@@ -561,7 +562,7 @@
 }
 
 .voice-card__overlay-mute {
-  background: rgba(237, 66, 69, 0.85);
+  background: rgba(255, 77, 87, 0.85);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -570,11 +571,11 @@
 /* --- Quality Pill in Header --- */
 .stage-view__quality-pill {
   padding: 2px 8px;
-  background: #23a55a;
+  background: var(--accent);
   border-radius: var(--radius-sm, 4px);
   font-size: 0.6875rem;
   font-weight: 700;
-  color: white;
+  color: var(--accent-contrast);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -632,8 +633,8 @@
 /* --- Stream Tile --- */
 .stream-tile {
   position: relative;
-  background: #111214;
-  border-radius: 8px;
+  background: #070a08;
+  border-radius: var(--radius-md);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -641,7 +642,7 @@
   width: 100%;
   height: 100%;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
   transition: all 0.2s ease;
   cursor: pointer;
 }
@@ -651,11 +652,11 @@
 }
 
 .stream-tile:hover:not(.stream-tile--single) {
-  border-color: #5865f2;
+  border-color: var(--accent);
 }
 
 .stream-tile--focused {
-  border-color: #23a55a;
+  border-color: var(--accent);
 }
 
 .stream-tile__overlay-header {
@@ -685,7 +686,7 @@
 
 .stream-tile__live-badge {
   padding: 2px 6px;
-  background: #ed4245;
+  background: var(--red);
   color: white;
   border-radius: 4px;
   font-size: 0.6875rem;
@@ -695,8 +696,8 @@
 
 .stream-tile__quality-badge {
   padding: 2px 6px;
-  background: #23a55a;
-  color: white;
+  background: var(--accent);
+  color: var(--accent-contrast);
   border-radius: 4px;
   font-size: 0.6875rem;
   font-weight: 700;
@@ -734,13 +735,13 @@
 }
 
 .stream-tile__btn--stop {
-  background: #ed4245;
-  border-color: #ed4245;
+  background: var(--red);
+  border-color: var(--red);
   font-weight: 600;
 }
 
 .stream-tile__btn--stop:hover {
-  background: #da373c;
+  background: var(--red-hover);
 }
 
 .stream-tile__video {
@@ -755,10 +756,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
-  background: #1e1f22;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border);
   font-size: 0.85rem;
-  color: #949ba4;
+  color: var(--text-muted);
 }
 
 

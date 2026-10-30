@@ -234,7 +234,7 @@ export default function StageView({
         ];
 
   const getAvatarColor = (name: string): string => {
-    const colors = ['#5865f2', '#3ba55d', '#faa81a', '#ed4245', '#eb459e', '#9b59b6', '#e67e22', '#1abc9c'];
+    const colors = ['#2f8f4e', '#1f9e8a', '#6f9a12', '#b8860b', '#3b7d6e', '#4f7d2a', '#2e8b8b', '#8a6d1d'];
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
       hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -265,7 +265,7 @@ export default function StageView({
             <>
               <span style={{ fontSize: '1.2rem', marginRight: '4px' }}>🔊</span>
               <span className="stage-view__stream-title">{channelName}</span>
-              <span style={{ color: 'var(--text-muted, #949ba4)', fontSize: '0.85rem', marginLeft: '8px' }}>
+              <span style={{ color: 'var(--text-muted, var(--text-muted))', fontSize: '0.85rem', marginLeft: '8px' }}>
                 ({displayParticipants.length} participante{displayParticipants.length === 1 ? '' : 's'})
               </span>
             </>

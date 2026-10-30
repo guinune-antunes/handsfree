@@ -7,6 +7,9 @@ import LoginScreen from './components/LoginScreen';
 import Dashboard from './components/Dashboard';
 import SettingsModal from './components/SettingsModal';
 import StreamQualityModal from './components/StreamQualityModal';
+import UpdateModal from './components/UpdateModal';
+import { checkForUpdate, ignoreUpdate, isUpdateIgnored } from './config/updater';
+import type { UpdateInfo } from './config/updater';
 import './App.css';
 
 function App() {
@@ -25,6 +28,9 @@ function App() {
   // --- Modals ---
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [qualityModalOpen, setQualityModalOpen] = useState(false);
+
+  // --- Atualização (GitHub Releases) ---
+  const [availableUpdate, setAvailableUpdate] = useState<UpdateInfo | null>(null);
 
   // --- Membros reais conectados ---
   const realMembers = useMemo<Member[]>(() => {
@@ -87,6 +93,24 @@ function App() {
   const handleConnect = useCallback((newConfig: AppConfig) => {
     setConfig(newConfig);
     setScreen('dashboard');
+
+    // Ao conectar no servidor, verifica em segundo plano se há versão nova no GitHub.
+    // Nunca bloqueia nem quebra a conexão: em caso de falha apenas segue sem avisar.
+    checkForUpdate().then((update) => {
+      if (update && !isUpdateIgnored(update.tag)) {
+        setAvailableUpdate(update);
+      }
+    });
+  }, []);
+
+  /** Verificação manual (Configurações > Sobre). Retorna se há atualização. */
+  const handleManualUpdateCheck = useCallback(async (): Promise<boolean> => {
+    const update = await checkForUpdate();
+    if (update) {
+      setAvailableUpdate(update);
+      return true;
+    }
+    return false;
   }, []);
 
   const handleChannelSelect = useCallback((channelId: string) => {
@@ -215,6 +239,16 @@ function App() {
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         onStartStream={handleStartStream}
+        onCheckUpdate={handleManualUpdateCheck}
+      />
+
+      <UpdateModal
+        update={availableUpdate}
+        onLater={() => setAvailableUpdate(null)}
+        onIgnore={() => {
+          if (availableUpdate) ignoreUpdate(availableUpdate.tag);
+          setAvailableUpdate(null);
+        }}
       />
 
       <StreamQualityModal

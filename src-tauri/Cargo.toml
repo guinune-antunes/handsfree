@@ -1,7 +1,7 @@
 [package]
-name = "discord-clone-leve"
-version = "0.1.0"
-description = "Discord Clone Leve — Comunicação em tempo real"
+name = "shelter"
+version = "0.1.1"
+description = "Shelter — Comunicação em tempo real"
 authors = ["you"]
 edition = "2021"
 
@@ -11,11 +11,11 @@ edition = "2021"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "discord_clone_leve_lib"
+name = "shelter_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [[bin]]
-name = "discord-clone-leve"
+name = "shelter"
 path = "src/main.rs"
 
 [build-dependencies]

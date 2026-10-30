@@ -1,22 +1,22 @@
 @echo off
 setlocal
-title Instalador do Cliente - Discord Clone Leve
+title Instalador do Cliente - Shelter
 
 echo ========================================================
-echo    Instalador do Cliente - Discord Clone Leve
+echo    Instalador do Cliente - Shelter
 echo ========================================================
 echo.
 
 cd /d "%~dp0"
 
-if exist "Instalador-Discord-Clone.exe" (
-    echo Iniciando o Instalador Visual do Discord Clone Leve...
-    start "" "%~dp0Instalador-Discord-Clone.exe"
+if exist "Instalador-Shelter.exe" (
+    echo Iniciando o Instalador Visual do Shelter...
+    start "" "%~dp0Instalador-Shelter.exe"
     exit /b 0
 )
 
 echo ========================================================
-echo    Instalador do Cliente - Discord Clone Leve
+echo    Instalador do Cliente - Shelter
 echo ========================================================
 echo.
 if not exist "node_modules\" (

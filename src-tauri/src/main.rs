@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    discord_clone_leve_lib::run()
+    shelter_lib::run()
 }

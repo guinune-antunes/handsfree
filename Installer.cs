@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Threading;
 
-namespace DiscordCloneInstaller
+namespace ShelterInstaller
 {
     static class Program
     {
@@ -69,7 +69,7 @@ namespace DiscordCloneInstaller
 
         private void InitializeComponent()
         {
-            this.Text = "Instalador — Discord Clone Leve";
+            this.Text = "Instalador — Shelter";
             this.Size = new Size(580, 500);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -114,7 +114,7 @@ namespace DiscordCloneInstaller
 
             lblHeaderTitle = new Label
             {
-                Text = "Discord Clone Leve",
+                Text = "Shelter",
                 Font = new Font("Segoe UI", 16f, FontStyle.Bold),
                 ForeColor = ColorText,
                 TextAlign = ContentAlignment.MiddleCenter,
@@ -187,7 +187,7 @@ namespace DiscordCloneInstaller
 
             Label lblThanks = new Label
             {
-                Text = "Muito obrigado por instalar o Discord Clone Leve!\nO atalho oficial foi criado diretamente na sua Área de Trabalho.",
+                Text = "Muito obrigado por instalar o Shelter!\nO atalho oficial foi criado diretamente na sua Área de Trabalho.",
                 Font = new Font("Segoe UI", 9.5f, FontStyle.Regular),
                 ForeColor = ColorText,
                 TextAlign = ContentAlignment.MiddleCenter,
@@ -265,7 +265,7 @@ namespace DiscordCloneInstaller
             // Botões de Ação Final
             btnLaunch = new Button
             {
-                Text = "🚀 Abrir Discord Clone Leve",
+                Text = "🚀 Abrir Shelter",
                 Location = new Point(45, 330),
                 Size = new Size(270, 42),
                 BackColor = ColorGreen,
@@ -504,7 +504,7 @@ namespace DiscordCloneInstaller
                 if (progressValue < 20)
                     lblStatus.Text = "📁 Verificando processos e preparando diretório...";
                 else if (progressValue < 50)
-                    lblStatus.Text = "📦 Extraindo executável otimizado do Discord Clone Leve...";
+                    lblStatus.Text = "📦 Extraindo executável otimizado do Shelter...";
                 else if (progressValue < 75)
                     lblStatus.Text = "📌 Criando atalho na Área de Trabalho...";
                 else if (progressValue < 95)
@@ -526,7 +526,7 @@ namespace DiscordCloneInstaller
                 // 1. Fechar qualquer processo do aplicativo para evitar travamento de arquivo
                 try
                 {
-                    foreach (var p in Process.GetProcessesByName("discord-clone-leve"))
+                    foreach (var p in Process.GetProcessesByName("shelter"))
                     {
                         try { p.Kill(); p.WaitForExit(3000); } catch { }
                     }
@@ -534,21 +534,21 @@ namespace DiscordCloneInstaller
                 catch { }
 
                 string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string installDir = Path.Combine(localAppData, "DiscordCloneLeve");
+                string installDir = Path.Combine(localAppData, "Shelter");
                 if (!Directory.Exists(installDir))
                 {
                     Directory.CreateDirectory(installDir);
                 }
 
-                installedExePath = Path.Combine(installDir, "discord-clone-leve.exe");
+                installedExePath = Path.Combine(installDir, "shelter.exe");
                 string iconPath = Path.Combine(installDir, "icon.ico");
 
-                // 2. Extrair discord-clone-leve.exe
-                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("discord-clone-leve.exe"))
+                // 2. Extrair shelter.exe
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("shelter.exe"))
                 {
                     if (stream == null)
                     {
-                        throw new InvalidOperationException("O recurso nativo 'discord-clone-leve.exe' não foi localizado no instalador.");
+                        throw new InvalidOperationException("O recurso nativo 'shelter.exe' não foi localizado no instalador.");
                     }
 
                     using (FileStream fs = new FileStream(installedExePath, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -578,7 +578,7 @@ namespace DiscordCloneInstaller
 
                 // 5. Criar Atalho na Área de Trabalho
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string shortcutPath = Path.Combine(desktopPath, "Discord Clone Leve.lnk");
+                string shortcutPath = Path.Combine(desktopPath, "Shelter.lnk");
 
                 CreateShortcut(shortcutPath, installedExePath, installDir, iconPath);
 
@@ -595,7 +595,7 @@ namespace DiscordCloneInstaller
                 try
                 {
                     string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                    string logDir = Path.Combine(localAppData, "DiscordCloneLeve");
+                    string logDir = Path.Combine(localAppData, "Shelter");
                     if (Directory.Exists(logDir))
                     {
                         File.WriteAllText(Path.Combine(logDir, "instalador_erro.log"), errDetails);
@@ -625,7 +625,7 @@ namespace DiscordCloneInstaller
                     dynamic shortcut = shell.CreateShortcut(shortcutPath);
                     shortcut.TargetPath = targetExe;
                     shortcut.WorkingDirectory = workingDir;
-                    shortcut.Description = "Discord Clone Leve — Comunicação em Tempo Real";
+                    shortcut.Description = "Shelter — Comunicação em Tempo Real";
                     if (File.Exists(iconPath))
                     {
                         shortcut.IconLocation = iconPath + ",0";

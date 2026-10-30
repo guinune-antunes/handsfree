@@ -1,14 +1,14 @@
 # ==============================================================================
 # FERRAMENTA DE DIAGNÓSTICO COMPLETO E AUDITORIA SEM LACUNAS
-# Sistema: Discord Clone Leve
+# Sistema: Shelter
 # Executa varredura profunda de SO, WebView2, Arquivos, Rede, Portas, Logs e Firewall
 # ==============================================================================
 
 $ErrorActionPreference = "Continue"
 
 $DesktopPath = [Environment]::GetFolderPath("Desktop")
-$ReportFile = Join-Path $DesktopPath "DIAGNOSTICO_DISCORD_CLONE.txt"
-$LocalReport = Join-Path (Get-Location) "DIAGNOSTICO_DISCORD_CLONE.txt"
+$ReportFile = Join-Path $DesktopPath "DIAGNOSTICO_SHELTER.txt"
+$LocalReport = Join-Path (Get-Location) "DIAGNOSTICO_SHELTER.txt"
 $Output = New-Object System.Collections.Generic.List[string]
 
 function Log-Msg {
@@ -37,7 +37,7 @@ function Log-Msg {
 
 Clear-Host
 Write-Host "==================================================================" -ForegroundColor Cyan
-Write-Host "   AUDITORIA E DIAGNOSTICO COMPLETO -- DISCORD CLONE LEVE         " -ForegroundColor Cyan
+Write-Host "   AUDITORIA E DIAGNOSTICO COMPLETO -- SHELTER         " -ForegroundColor Cyan
 Write-Host "==================================================================" -ForegroundColor Cyan
 Write-Host "Iniciando analise profunda de todos os componentes do sistema...`n" -ForegroundColor Gray
 
@@ -116,8 +116,8 @@ if ($webviewFound) {
 # ------------------------------------------------------------------------------
 Write-Host "`n[3/10] Verificando Diretorio de Instalacao e Permissoes..." -ForegroundColor Yellow
 $localAppData = [Environment]::GetFolderPath("LocalApplicationData")
-$appDir = Join-Path $localAppData "DiscordCloneLeve"
-$installedExe = Join-Path $appDir "discord-clone-leve.exe"
+$appDir = Join-Path $localAppData "Shelter"
+$installedExe = Join-Path $appDir "shelter.exe"
 
 if (Test-Path $appDir) {
     Log-Msg "OK" "Pasta de instalacao existe: $appDir" "Green"
@@ -126,12 +126,12 @@ if (Test-Path $appDir) {
         $testFile = Join-Path $appDir ".write_test.tmp"
         [System.IO.File]::WriteAllText($testFile, "test")
         Remove-Item $testFile -Force -ErrorAction SilentlyContinue
-        Log-Msg "OK" "Permissao de escrita confirmada em %LOCALAPPDATA%\DiscordCloneLeve." "Green"
+        Log-Msg "OK" "Permissao de escrita confirmada em %LOCALAPPDATA%\Shelter." "Green"
     } catch {
         Log-Msg "ERRO" "Sem permissao de escrita na pasta de instalacao: $($_.Exception.Message)" "Red"
     }
 } else {
-    Log-Msg "AVISO" "Pasta %LOCALAPPDATA%\DiscordCloneLeve ainda nao foi criada." "Yellow"
+    Log-Msg "AVISO" "Pasta %LOCALAPPDATA%\Shelter ainda nao foi criada." "Yellow"
 }
 
 # ------------------------------------------------------------------------------
@@ -155,7 +155,7 @@ if (Test-Path $installedExe) {
         $stream.Close()
     } catch {
         $isLocked = $true
-        Log-Msg "ERRO" "O executavel esta BLOQUEADO por outro processo! Finalize o discord-clone-leve antes de instalar." "Red"
+        Log-Msg "ERRO" "O executavel esta BLOQUEADO por outro processo! Finalize o shelter antes de instalar." "Red"
     }
     
     if (-not $isLocked) {
@@ -181,14 +181,14 @@ if (Test-Path $installedExe) {
         Log-Msg "OK" "Tamanho compativel com binario de producao consolidado com frontend embutido." "Green"
     }
 } else {
-    Log-Msg "ERRO" "Executavel 'discord-clone-leve.exe' NAO ENCONTRADO em: $installedExe" "Red"
+    Log-Msg "ERRO" "Executavel 'shelter.exe' NAO ENCONTRADO em: $installedExe" "Red"
 }
 
 # ------------------------------------------------------------------------------
 # 5. ATALHO NA AREA DE TRABALHO
 # ------------------------------------------------------------------------------
 Write-Host "`n[5/10] Verificando Atalho na Area de Trabalho..." -ForegroundColor Yellow
-$shortcutPath = Join-Path $DesktopPath "Discord Clone Leve.lnk"
+$shortcutPath = Join-Path $DesktopPath "Shelter.lnk"
 
 if (Test-Path $shortcutPath) {
     try {
@@ -207,21 +207,21 @@ if (Test-Path $shortcutPath) {
         Log-Msg "AVISO" "Atalho existe mas nao foi possivel inspecionar via COM." "Yellow"
     }
 } else {
-    Log-Msg "AVISO" "Atalho oficial 'Discord Clone Leve.lnk' nao esta na Area de Trabalho ($DesktopPath)." "Yellow"
+    Log-Msg "AVISO" "Atalho oficial 'Shelter.lnk' nao esta na Area de Trabalho ($DesktopPath)." "Yellow"
 }
 
 # ------------------------------------------------------------------------------
 # 6. PROCESSOS ATIVOS E SUBPROCESSOS WEBVIEW2
 # ------------------------------------------------------------------------------
 Write-Host "`n[6/10] Verificando Processos em Execucao..." -ForegroundColor Yellow
-$procs = Get-Process -Name "*discord-clone-leve*" -ErrorAction SilentlyContinue
+$procs = Get-Process -Name "*shelter*" -ErrorAction SilentlyContinue
 if ($procs) {
     foreach ($p in $procs) {
         $memMb = [Math]::Round($p.WorkingSet64 / 1048576, 1)
         Log-Msg "AVISO" "Processo em execucao: Nome: $($p.ProcessName) | PID: $($p.Id) | RAM: $memMb MB" "Yellow"
     }
 } else {
-    Log-Msg "OK" "Nenhum processo 'discord-clone-leve' travado em segundo plano." "Green"
+    Log-Msg "OK" "Nenhum processo 'shelter' travado em segundo plano." "Green"
 }
 
 $wvProcs = Get-Process -Name "msedgewebview2" -ErrorAction SilentlyContinue
@@ -234,7 +234,7 @@ if ($wvProcs) {
 # ------------------------------------------------------------------------------
 Write-Host "`n[7/10] Verificando Cache e Configuracoes Salvas..." -ForegroundColor Yellow
 $appDataRoaming = [Environment]::GetFolderPath("ApplicationData")
-$configPath = Join-Path $appDataRoaming "discord-clone-leve\config.json"
+$configPath = Join-Path $appDataRoaming "shelter\config.json"
 $serverHost = "187.7.186.10"
 
 if (Test-Path $configPath) {
@@ -317,7 +317,7 @@ $foundCrash = $false
 try {
     $cutoff = (Get-Date).AddDays(-2)
     $events = Get-WinEvent -FilterHashtable @{LogName='Application'; StartTime=$cutoff; Level=2} -MaxEvents 30 -ErrorAction SilentlyContinue | Where-Object { 
-        $_.Message -match "discord-clone-leve" -or 
+        $_.Message -match "shelter" -or 
         $_.Message -match "Instalador" -or 
         $_.Message -match "WebView2" 
     }
@@ -349,7 +349,7 @@ if ($procs) {
     $Output.Add("ACAO 2: Existem instancias do app rodando. Finalize-as antes de reinstalar.")
 }
 if (-not (Test-Path $installedExe)) {
-    $Output.Add("ACAO 3: O executavel nao esta instalado. Execute 'Instalador-Discord-Clone.exe' como Administrador.")
+    $Output.Add("ACAO 3: O executavel nao esta instalado. Execute 'Instalador-Shelter.exe' como Administrador.")
 }
 $Output.Add("==================================================================")
 

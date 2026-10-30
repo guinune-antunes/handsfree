@@ -1,5 +1,5 @@
 /* ============================================
-   STREAM QUALITY MODAL — Discord Clone Leve
+   STREAM QUALITY MODAL — Shelter
    ============================================ */
 
 .stream-modal-overlay {
@@ -17,11 +17,11 @@
 .stream-modal {
   width: 90%;
   max-width: 520px;
-  background: #2b2d31;
-  border-radius: 12px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-strong);
   display: flex;
   flex-direction: column;
 }
@@ -31,7 +31,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border);
 }
 
 .stream-modal__title-group {
@@ -45,21 +45,24 @@
 
 .stream-modal__title {
   margin: 0;
-  font-size: 1.15rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 1.3rem;
   font-weight: 700;
-  color: #f2f3f5;
+  color: var(--header-primary);
 }
 
 .stream-modal__subtitle {
   margin: 4px 0 0 0;
   font-size: 0.85rem;
-  color: #949ba4;
+  color: var(--text-muted);
 }
 
 .stream-modal__close {
   background: none;
   border: none;
-  color: #b5bac1;
+  color: var(--interactive-normal);
   font-size: 1.2rem;
   cursor: pointer;
   padding: 4px;
@@ -69,7 +72,7 @@
 
 .stream-modal__close:hover {
   color: white;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border);
 }
 
 .stream-modal__content {
@@ -89,7 +92,7 @@
   align-items: center;
   gap: 14px;
   padding: 14px 16px;
-  background: #1e1f22;
+  background: var(--bg-tertiary);
   border: 2px solid transparent;
   border-radius: 8px;
   cursor: pointer;
@@ -97,20 +100,20 @@
 }
 
 .stream-preset-card:hover {
-  background: #232428;
+  background: var(--bg-primary);
   border-color: rgba(255, 255, 255, 0.12);
 }
 
 .stream-preset-card--active {
-  background: #232428;
-  border-color: #5865f2;
+  background: var(--bg-primary);
+  border-color: var(--accent);
 }
 
 .stream-preset-card__radio {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 2px solid #949ba4;
+  border: 2px solid var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -118,14 +121,15 @@
 }
 
 .stream-preset-card--active .stream-preset-card__radio {
-  border-color: #5865f2;
+  border-color: var(--accent);
 }
 
 .stream-preset-card__radio-inner {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #5865f2;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
 }
 
 .stream-preset-card__info {
@@ -135,7 +139,7 @@
 .stream-preset-card__label {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #f2f3f5;
+  color: var(--header-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -146,21 +150,21 @@
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
-  background: #23a55a;
-  color: white;
+  background: var(--accent);
+  color: var(--accent-contrast);
   text-transform: uppercase;
 }
 
 .stream-preset-card__meta {
   font-size: 0.8rem;
-  color: #949ba4;
+  color: var(--text-muted);
   margin-top: 3px;
 }
 
 .stream-modal__footer {
   padding: 16px 24px;
-  background: #1e1f22;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -178,7 +182,7 @@
 
 .stream-modal__btn--secondary {
   background: transparent;
-  color: #f2f3f5;
+  color: var(--header-primary);
 }
 
 .stream-modal__btn--secondary:hover {
@@ -186,10 +190,10 @@
 }
 
 .stream-modal__btn--primary {
-  background: #5865f2;
-  color: white;
+  background: var(--accent);
+  color: var(--accent-contrast);
 }
 
 .stream-modal__btn--primary:hover {
-  background: #4752c4;
+  background: var(--accent-hover);
 }

@@ -1,5 +1,5 @@
 @echo off
-title Diagnostico Completo - Discord Clone Leve
+title Diagnostico Completo - Shelter
 echo ==========================================================
 echo    Executando Diagnostico Completo do Sistema...
 echo ==========================================================
