@@ -23,6 +23,7 @@ export interface Member {
   isDeafened: boolean;
   isStreaming: boolean;
   hasCamera?: boolean;
+  voiceChannelId?: string | null;
 }
 
 export interface Channel {

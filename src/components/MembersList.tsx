@@ -42,6 +42,8 @@ export default function MembersList({ members }: MembersListProps) {
         <div className="operator-card__status-line">
           {member.isStreaming ? (
             <span className="operator-card__tag operator-card__tag--stream">TRANSMITINDO TELA</span>
+          ) : member.voiceChannelId ? (
+            <span className="operator-card__tag operator-card__tag--active">EM CALL // ATIVO</span>
           ) : member.status === 'offline' ? (
             <span className="operator-card__tag">DESCONECTADO</span>
           ) : (

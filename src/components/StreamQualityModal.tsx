@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { StreamQualityPreset } from '../types';
 import { STREAM_QUALITY_PRESETS } from '../config/streamQuality';
 import './StreamQualityModal.css';
@@ -22,13 +22,17 @@ export default function StreamQualityModal({
 }: StreamQualityModalProps) {
   const [selected, setSelected] = useState<StreamQualityPreset>(currentPreset);
 
+  useEffect(() => {
+    if (isOpen) {
+      setSelected(currentPreset);
+    }
+  }, [isOpen, currentPreset]);
+
   if (!isOpen) return null;
 
   const handleConfirm = () => {
     onSelectPreset(selected);
-    if (!isStreaming) {
-      onStartStreamWithPreset(selected);
-    }
+    onStartStreamWithPreset(selected);
     onClose();
   };
 

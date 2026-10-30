@@ -71,9 +71,15 @@ export default function Dashboard({
   const currentChannel = channels.find((ch) => ch.id === currentChannelId);
   const channelMessages = messages.filter((m) => m.channelId === currentChannelId);
 
-  // Se o canal selecionado for de voz ou se houver transmissão ativa, exibe o palco da chamada
+  // Se o canal selecionado for de texto, exibe o ChatPanel.
+  // Se for de voz (ou se nenhuma aba de texto estiver aberta e houver transmissão), exibe o palco da chamada.
+  const isTextChannel = currentChannel?.type === 'text';
   const isVoiceChannel = currentChannel?.type === 'voice';
-  const showStage = isVoiceChannel || streamState.isActive || (activeStreams && activeStreams.length > 0);
+  const showStage = !isTextChannel && (isVoiceChannel || streamState.isActive || (activeStreams && activeStreams.length > 0));
+
+  const connectedVoiceChannel = voiceState.isConnected
+    ? channels.find((ch) => ch.id === voiceState.channelId)
+    : null;
 
   return (
     <div className="dashboard-wrapper">
@@ -212,13 +218,48 @@ export default function Dashboard({
               nickname={nickname}
               isMuted={isMuted}
               isDeafened={isDeafened}
-            />
-          ) : currentChannel ? (
-            <ChatPanel
-              channel={currentChannel}
-              messages={channelMessages}
+              messages={messages}
+              channels={channels}
               onSendMessage={onSendMessage}
             />
+          ) : currentChannel ? (
+            <div className="dashboard__chat-container">
+              {connectedVoiceChannel && (
+                <div className="tactical-call-hud">
+                  <div className="tactical-call-hud__info">
+                    <span className="tactical-call-hud__pulse" />
+                    <span className="tactical-call-hud__label">EM CHAMADA DE VOZ:</span>
+                    <span className="tactical-call-hud__room">{connectedVoiceChannel.name.toUpperCase()}</span>
+                    {isLocalStreaming && (
+                      <span className="tactical-call-hud__stream-badge">TRANSMITINDO TELA</span>
+                    )}
+                  </div>
+                  <div className="tactical-call-hud__actions">
+                    <button
+                      type="button"
+                      className="tactical-call-hud__btn tactical-call-hud__btn--return"
+                      onClick={() => onChannelSelect(connectedVoiceChannel.id)}
+                      title="Retornar à tela de vídeo e voz"
+                    >
+                      RETORNAR AO PALCO
+                    </button>
+                    <button
+                      type="button"
+                      className="tactical-call-hud__btn tactical-call-hud__btn--disconnect"
+                      onClick={onVoiceDisconnect}
+                      title="Desconectar da chamada de voz"
+                    >
+                      CORTAR SINAL
+                    </button>
+                  </div>
+                </div>
+              )}
+              <ChatPanel
+                channel={currentChannel}
+                messages={channelMessages}
+                onSendMessage={onSendMessage}
+              />
+            </div>
           ) : null}
         </main>
 

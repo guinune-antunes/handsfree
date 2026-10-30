@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, type RefObject } from 'react';
-import type { StreamState, VoiceState, ActiveStream } from '../types';
+import type { StreamState, VoiceState, ActiveStream, Message, Channel } from '../types';
 import type { LiveKitParticipant } from '../hooks/useLiveKit';
 import { getInitials } from '../data/mockData';
+import ChatPanel from './ChatPanel';
 import './StageView.css';
 
 interface StageViewProps {
@@ -24,6 +25,9 @@ interface StageViewProps {
   onStopStream: () => void;
   onVoiceDisconnect: () => void;
   onOpenStreamQuality?: () => void;
+  messages?: Message[];
+  channels?: Channel[];
+  onSendMessage?: (content: string) => void;
 }
 
 function ParticipantCamera({
@@ -184,8 +188,21 @@ export default function StageView({
   onStopStream,
   onVoiceDisconnect,
   onOpenStreamQuality,
+  messages = [],
+  channels = [],
+  onSendMessage,
 }: StageViewProps) {
   const [focusedStreamId, setFocusedStreamId] = useState<string | null>(null);
+  const [showSideChat, setShowSideChat] = useState(false);
+
+  const activeChatChannel =
+    channels.find((c) => c.type === 'text') || {
+      id: 'ch-text-1',
+      name: 'geral',
+      type: 'text' as const,
+      connectedMembers: [],
+    };
+  const chatMessages = messages.filter((m) => m.channelId === activeChatChannel.id);
 
   // Fallback para caso activeStreams esteja vazio mas activeScreenTrack exista
   const effectiveStreams: ActiveStream[] =
@@ -306,11 +323,22 @@ export default function StageView({
               </button>
             )
           )}
+          {onSendMessage && (
+            <button
+              className={`stage-view__btn ${showSideChat ? 'stage-view__btn--primary' : 'stage-view__btn--secondary'}`}
+              onClick={() => setShowSideChat((prev) => !prev)}
+              title="Abrir/Fechar chat de texto lateral durante a chamada"
+            >
+              💬 CHAT {chatMessages.length > 0 ? `[${chatMessages.length}]` : ''}
+            </button>
+          )}
         </div>
       </div>
 
-      {/* CASO 1: Transmissões ativas (1 ou mais telas simultâneas) */}
-      {hasStreams ? (
+      <div className={`stage-view__content-split ${showSideChat ? 'stage-view__content-split--active' : ''}`}>
+        <div className="stage-view__stage-container">
+          {/* CASO 1: Transmissões ativas (1 ou mais telas simultâneas) */}
+          {hasStreams ? (
         <div className="stage-view__stream-layout">
           {/* Mini-carrossel de participantes no topo */}
           <div className="stage-view__cameras">
@@ -520,6 +548,19 @@ export default function StageView({
           </div>
         </div>
       )}
+        </div>
+
+        {/* Painel Lateral de Chat de Texto */}
+        {showSideChat && onSendMessage && (
+          <aside className="stage-view__side-chat-drawer">
+            <ChatPanel
+              channel={activeChatChannel}
+              messages={chatMessages}
+              onSendMessage={onSendMessage}
+            />
+          </aside>
+        )}
+      </div>
     </div>
   );
 }

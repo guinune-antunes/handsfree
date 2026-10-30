@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import type { StreamQualityPreset } from '../types';
+import { STREAM_QUALITY_PRESETS } from '../config/streamQuality';
 import { APP_VERSION_BASE, APP_CHANNEL } from '../config/version';
 import ShelterMark from './ShelterMark';
 import './SettingsModal.css';
@@ -11,6 +13,9 @@ interface SettingsModalProps {
   onCheckUpdate?: () => Promise<boolean>;
   /** Desconecta do servidor e retorna para a tela inicial. */
   onDisconnect?: () => void;
+  currentPreset?: StreamQualityPreset;
+  onSelectPreset?: (preset: StreamQualityPreset) => void;
+  isStreaming?: boolean;
 }
 
 interface MediaDevice {
@@ -25,6 +30,9 @@ export default function SettingsModal({
   onStartStream,
   onCheckUpdate,
   onDisconnect,
+  currentPreset,
+  onSelectPreset,
+  isStreaming = false,
 }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<'audio' | 'video' | 'stream' | 'about'>('audio');
   const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'latest' | 'found'>('idle');
@@ -451,6 +459,44 @@ export default function SettingsModal({
                   Transmita a tela cheia ou janelas de jogos com baixa latência via SFU dedicado. Suporta resolução até <strong>1080p a 60 FPS</strong> com múltiplos operadores assistindo simultaneamente.
                 </p>
 
+                {isStreaming && (
+                  <div className="settings-alert settings-alert--ok" style={{ marginBottom: 16 }}>
+                    🟢 TRANSMISSÃO EM ANDAMENTO — Você pode reduzir a qualidade e os quadros por segundo abaixo a qualquer momento.
+                  </div>
+                )}
+
+                <label className="settings-field__label" style={{ marginBottom: 10 }}>
+                  SELECIONE A QUALIDADE / TAXA DE QUADROS (FPS):
+                </label>
+
+                <div className="settings-presets-list" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
+                  {STREAM_QUALITY_PRESETS.map((preset) => {
+                    const isCurrent = currentPreset?.id === preset.id;
+                    return (
+                      <div
+                        key={preset.id}
+                        className={`stream-preset-card ${isCurrent ? 'stream-preset-card--active' : ''}`}
+                        onClick={() => onSelectPreset?.(preset)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div className="stream-preset-card__radio">
+                          {isCurrent && <div className="stream-preset-card__radio-inner" />}
+                        </div>
+                        <div className="stream-preset-card__info">
+                          <div className="stream-preset-card__label" style={{ fontWeight: 700, color: isCurrent ? 'var(--accent)' : 'inherit' }}>
+                            {preset.label}
+                            {preset.id === '1080p60' && <span className="stream-preset-card__tag" style={{ marginLeft: 8 }}>Padrão 60fps</span>}
+                            {preset.id === '720p30' && <span className="stream-preset-card__tag" style={{ marginLeft: 8, background: 'rgba(31, 158, 138, 0.2)', borderColor: 'var(--green)' }}>Econômico</span>}
+                          </div>
+                          <div className="stream-preset-card__meta" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            Resolução: {preset.width}x{preset.height} • {preset.fps} FPS • Bitrate: {preset.bitrate / 1000000} Mbps
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
                 <button
                   type="button"
                   className="settings-action-btn chamfer-sm"
@@ -461,7 +507,7 @@ export default function SettingsModal({
                     <line x1="8" y1="21" x2="16" y2="21" />
                     <line x1="12" y1="17" x2="12" y2="21" />
                   </svg>
-                  INICIAR COMPARTILHAMENTO DE TELA
+                  {isStreaming ? 'REINICIAR / REABRIR SELETOR DE TELA' : 'INICIAR COMPARTILHAMENTO DE TELA'}
                 </button>
               </div>
             </div>

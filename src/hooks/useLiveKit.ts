@@ -48,18 +48,22 @@ export interface UseLiveKitReturn {
   startScreenShare: (preset?: StreamQualityPreset) => Promise<void>;
   stopScreenShare: () => void;
   setStreamPreset: (preset: StreamQualityPreset) => void;
+  changeStreamQuality: (preset: StreamQualityPreset) => Promise<void>;
+  publishChatMessage: (msg: any) => Promise<void>;
 
   // Refs for attaching media
   screenVideoRef: React.RefObject<HTMLVideoElement | null>;
 }
 
-export function useLiveKit(): UseLiveKitReturn {
+export function useLiveKit(onMessageReceived?: (msg: any) => void): UseLiveKitReturn {
   const roomRef = useRef<Room | null>(null);
   const audioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
   const remoteScreenTracksRef = useRef<Map<string, MediaStreamTrack>>(new Map());
   const remoteCameraTracksRef = useRef<Map<string, MediaStreamTrack>>(new Map());
   const localCameraTrackRef = useRef<MediaStreamTrack | null>(null);
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
+  const onMessageReceivedRef = useRef(onMessageReceived);
+  onMessageReceivedRef.current = onMessageReceived;
 
   const [voiceState, setVoiceState] = useState<VoiceState>({
     isConnected: false,
@@ -315,6 +319,47 @@ export function useLiveKit(): UseLiveKitReturn {
     }
   }, [streamPreset, stopScreenShare, updateStreams, updateParticipants]);
 
+  // --- Change stream quality on the fly ---
+  const changeStreamQuality = useCallback(async (preset: StreamQualityPreset) => {
+    setStreamPreset(preset);
+    const room = roomRef.current;
+    if (!room || !room.localParticipant) return;
+
+    console.log(`[LiveKit] Reconfigurando qualidade de tela: ${preset.label} (${preset.width}x${preset.height} @ ${preset.fps}fps)`);
+
+    const pub = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
+    if (pub && pub.track) {
+      try {
+        const track = pub.track.mediaStreamTrack;
+        if (track) {
+          await track.applyConstraints({
+            width: { max: preset.width },
+            height: { max: preset.height },
+            frameRate: { max: preset.fps },
+          });
+        }
+      } catch (err) {
+        console.warn('[LiveKit] applyConstraints falhou, reiniciando track com novo preset:', err);
+        await stopScreenShare();
+        setTimeout(() => {
+          startScreenShare(preset);
+        }, 200);
+      }
+    }
+  }, [stopScreenShare, startScreenShare]);
+
+  // --- Publish real-time chat message via LiveKit DataChannel ---
+  const publishChatMessage = useCallback(async (msg: any) => {
+    const room = roomRef.current;
+    if (!room || !room.localParticipant) return;
+    try {
+      const payload = new TextEncoder().encode(JSON.stringify(msg));
+      await room.localParticipant.publishData(payload, { reliable: true, topic: 'chat' });
+    } catch (err) {
+      console.warn('[LiveKit] Falha ao publicar mensagem no canal de dados:', err);
+    }
+  }, []);
+
   // --- Connect to a LiveKit room ---
   const connectToRoom = useCallback(async (url: string, token: string, channelId: string) => {
     // Disconnect from previous room if any
@@ -448,6 +493,21 @@ export function useLiveKit(): UseLiveKitReturn {
     room.on(RoomEvent.TrackMuted, () => updateParticipants());
     room.on(RoomEvent.TrackUnmuted, () => updateParticipants());
     room.on(RoomEvent.ActiveSpeakersChanged, () => updateParticipants());
+
+    // LiveKit DataChannel: chat instantâneo entre participantes na mesma sala
+    room.on(RoomEvent.DataReceived, (payload: Uint8Array, _participant?: any, _kind?: any, topic?: string) => {
+      if (topic === 'chat' || !topic) {
+        try {
+          const text = new TextDecoder().decode(payload);
+          const parsed = JSON.parse(text);
+          if (onMessageReceivedRef.current) {
+            onMessageReceivedRef.current(parsed);
+          }
+        } catch {
+          // Pacote não-JSON
+        }
+      }
+    });
 
     // --- Connect ---
     try {
@@ -614,6 +674,8 @@ export function useLiveKit(): UseLiveKitReturn {
     startScreenShare,
     stopScreenShare,
     setStreamPreset,
+    changeStreamQuality,
+    publishChatMessage,
     screenVideoRef,
   };
 }

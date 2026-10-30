@@ -256,8 +256,117 @@
   overflow: hidden;
 }
 
+.dashboard__chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ============================================
+   TACTICAL ACTIVE VOICE CALL HUD
+   Barra tática de status de chamada ativa no topo do chat
+   ============================================ */
+.tactical-call-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: linear-gradient(90deg, rgba(16, 32, 20, 0.98) 0%, rgba(8, 14, 10, 0.98) 100%);
+  border-bottom: 1px solid var(--accent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.tactical-call-hud__info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--text-normal);
+}
+
+.tactical-call-hud__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green);
+  animation: pulse 1.5s infinite;
+}
+
+.tactical-call-hud__label {
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+}
+
+.tactical-call-hud__room {
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.tactical-call-hud__stream-badge {
+  padding: 2px 6px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  background: rgba(182, 242, 31, 0.15);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 2px;
+}
+
+.tactical-call-hud__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tactical-call-hud__btn {
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 5px 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.tactical-call-hud__btn--return {
+  background: var(--accent);
+  color: #080c09;
+  border: 1px solid var(--accent);
+}
+
+.tactical-call-hud__btn--return:hover {
+  background: #c8fa3c;
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.tactical-call-hud__btn--disconnect {
+  background: rgba(237, 66, 69, 0.15);
+  color: #ff6b6e;
+  border: 1px solid rgba(237, 66, 69, 0.4);
+}
+
+.tactical-call-hud__btn--disconnect:hover {
+  background: #ed4245;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(237, 66, 69, 0.4);
+}
+
 /* Members Column */
 .dashboard__members {
   height: 100%;
   overflow: hidden;
 }
+
