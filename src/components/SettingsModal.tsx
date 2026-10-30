@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { APP_VERSION_BASE, APP_CHANNEL } from '../config/version';
+import ShelterMark from './ShelterMark';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onStartStream: () => void;
-  /** Consulta o GitHub; retorna true se houver atualização (o modal de atualização abre sozinho). */
+  /** Consulta o GitHub; retorna true se houver atualização. */
   onCheckUpdate?: () => Promise<boolean>;
+  /** Desconecta do servidor e retorna para a tela inicial. */
+  onDisconnect?: () => void;
 }
 
 interface MediaDevice {
@@ -16,8 +19,14 @@ interface MediaDevice {
   kind: MediaDeviceKind;
 }
 
-export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckUpdate }: SettingsModalProps) {
-  const [activeTab, setActiveTab] = useState('voice-video');
+export default function SettingsModal({
+  isOpen,
+  onClose,
+  onStartStream,
+  onCheckUpdate,
+  onDisconnect,
+}: SettingsModalProps) {
+  const [activeTab, setActiveTab] = useState<'audio' | 'video' | 'stream' | 'about'>('audio');
   const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'latest' | 'found'>('idle');
   const [devices, setDevices] = useState<MediaDevice[]>([]);
   const [selectedMic, setSelectedMic] = useState('');
@@ -27,6 +36,7 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [inputVolume, setInputVolume] = useState(80);
   const [outputVolume, setOutputVolume] = useState(100);
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
 
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
 
@@ -35,20 +45,20 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
     try {
       setDevicesError('');
 
-      // Try audio first (most important for voice chat)
+      // Try audio first
       try {
         const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         audioStream.getTracks().forEach((t) => t.stop());
       } catch {
-        // Audio permission denied - try to enumerate anyway
+        // Audio permission denied or already granted
       }
 
-      // Try video separately (optional)
+      // Try video separately
       try {
         const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
         videoStream.getTracks().forEach((t) => t.stop());
       } catch {
-        // Video permission denied - that's ok
+        // Video permission denied
       }
 
       const deviceList = await navigator.mediaDevices.enumerateDevices();
@@ -69,22 +79,25 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
         const defaultSpeaker = mappedDevices.find((d) => d.kind === 'audiooutput');
         if (defaultSpeaker) setSelectedSpeaker(defaultSpeaker.deviceId);
       }
+      if (!selectedCamera) {
+        const defaultCam = mappedDevices.find((d) => d.kind === 'videoinput');
+        if (defaultCam) setSelectedCamera(defaultCam.deviceId);
+      }
 
       if (mappedDevices.length === 0) {
         setDevicesError('Nenhum dispositivo de mídia encontrado. Verifique as permissões.');
       }
     } catch (err) {
       console.error('[Settings] Device enumeration failed:', err);
-      setDevicesError('Não foi possível acessar os dispositivos de áudio/vídeo. Verifique as permissões do aplicativo.');
+      setDevicesError('Não foi possível acessar os dispositivos de áudio/vídeo.');
     }
-  }, [selectedMic, selectedSpeaker]);
+  }, [selectedMic, selectedSpeaker, selectedCamera]);
 
   useEffect(() => {
     if (isOpen) {
       enumerateDevices();
     }
 
-    // Listen for device changes
     const handler = () => enumerateDevices();
     navigator.mediaDevices?.addEventListener('devicechange', handler);
     return () => {
@@ -94,8 +107,7 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
 
   // Camera preview
   useEffect(() => {
-    if (!isOpen || !selectedCamera) {
-      // Cleanup stream
+    if (!isOpen || !selectedCamera || activeTab !== 'video') {
       if (cameraStream) {
         cameraStream.getTracks().forEach((t) => t.stop());
         setCameraStream(null);
@@ -107,7 +119,6 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
 
     (async () => {
       try {
-        // Stop previous stream
         if (cameraStream) {
           cameraStream.getTracks().forEach((t) => t.stop());
         }
@@ -134,7 +145,7 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, selectedCamera]);
+  }, [isOpen, selectedCamera, activeTab]);
 
   // Cleanup on close
   useEffect(() => {
@@ -156,7 +167,6 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
     }
   }, [isOpen, onClose]);
 
-  // Share Screen
   const handleShareScreen = () => {
     onStartStream();
     onClose();
@@ -177,56 +187,132 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
 
   return (
     <div className="settings-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="settings-modal">
+      <div className="settings-modal chamfer-card">
         {/* Navigation Sidebar */}
-        <div className="settings-modal__nav">
-          <div className="settings-modal__nav-title">// SISTEMA & CONFIG</div>
-          <div
-            className={`settings-modal__nav-item ${activeTab === 'voice-video' ? 'settings-modal__nav-item--active' : ''}`}
-            onClick={() => setActiveTab('voice-video')}
-          >
-            DISPOSITIVOS // VOZ & VÍDEO
+        <nav className="settings-modal__nav">
+          <div className="settings-modal__nav-header">
+            <ShelterMark size={20} />
+            <span className="settings-modal__nav-title">// SISTEMA & CONFIG</span>
           </div>
-          <div
-            className={`settings-modal__nav-item ${activeTab === 'about' ? 'settings-modal__nav-item--active' : ''}`}
-            onClick={() => setActiveTab('about')}
-          >
-            SOBRE O SHELTER
-          </div>
-          <div className="settings-modal__nav-separator" />
-          <div className="settings-modal__nav-item" style={{ color: 'var(--red)', fontSize: '0.8125rem' }}>
-            DESCONECTAR
-          </div>
-        </div>
 
-        {/* Content */}
-        <div className="settings-modal__content">
+          <div className="settings-modal__nav-group">
+            <button
+              type="button"
+              className={`settings-modal__nav-item ${activeTab === 'audio' ? 'settings-modal__nav-item--active' : ''}`}
+              onClick={() => { setActiveTab('audio'); setShowDisconnectConfirm(false); }}
+            >
+              <span className="settings-modal__nav-prefix">&gt;</span>
+              ÁUDIO &amp; MICROFONE
+            </button>
+
+            <button
+              type="button"
+              className={`settings-modal__nav-item ${activeTab === 'video' ? 'settings-modal__nav-item--active' : ''}`}
+              onClick={() => { setActiveTab('video'); setShowDisconnectConfirm(false); }}
+            >
+              <span className="settings-modal__nav-prefix">&gt;</span>
+              VÍDEO &amp; CÂMERA
+            </button>
+
+            <button
+              type="button"
+              className={`settings-modal__nav-item ${activeTab === 'stream' ? 'settings-modal__nav-item--active' : ''}`}
+              onClick={() => { setActiveTab('stream'); setShowDisconnectConfirm(false); }}
+            >
+              <span className="settings-modal__nav-prefix">&gt;</span>
+              TRANSMISSÃO DE TELA
+            </button>
+
+            <button
+              type="button"
+              className={`settings-modal__nav-item ${activeTab === 'about' ? 'settings-modal__nav-item--active' : ''}`}
+              onClick={() => { setActiveTab('about'); setShowDisconnectConfirm(false); }}
+            >
+              <span className="settings-modal__nav-prefix">&gt;</span>
+              SOBRE O SHELTER
+            </button>
+          </div>
+
+          <div className="settings-modal__nav-separator" />
+
+          {/* Botão de Desconectar com ação real */}
+          <button
+            type="button"
+            className="settings-modal__nav-item settings-modal__nav-item--danger"
+            onClick={() => setShowDisconnectConfirm(true)}
+            title="Desconectar deste servidor e retornar ao menu de conexão"
+          >
+            <span className="settings-modal__nav-prefix">&times;</span>
+            DESCONECTAR DO SERVIDOR
+          </button>
+        </nav>
+
+        {/* Scrollable Content Area */}
+        <main className="settings-modal__content">
           {/* Close Button */}
-          <button className="settings-modal__close" onClick={onClose}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button
+            type="button"
+            className="settings-modal__close"
+            onClick={onClose}
+            title="Fechar (ESC)"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
 
-          {activeTab === 'voice-video' && (
-            <>
-              <h2 className="settings-modal__section-title">DISPOSITIVOS DE VOZ &amp; VÍDEO</h2>
+          {/* Modal de Confirmação de Desconexão */}
+          {showDisconnectConfirm && (
+            <div className="disconnect-confirm-box tactical-bracket">
+              <h3 className="disconnect-confirm-box__title">// CONFIRMAR DESCONEXÃO</h3>
+              <p className="disconnect-confirm-box__desc">
+                Você será desconectado da chamada e das frequências de dados deste servidor.
+              </p>
+              <div className="disconnect-confirm-box__actions">
+                <button
+                  type="button"
+                  className="disconnect-confirm-box__btn disconnect-confirm-box__btn--danger"
+                  onClick={() => {
+                    if (onDisconnect) onDisconnect();
+                    else onClose();
+                  }}
+                >
+                  SIM, DESCONECTAR
+                </button>
+                <button
+                  type="button"
+                  className="disconnect-confirm-box__btn"
+                  onClick={() => setShowDisconnectConfirm(false)}
+                >
+                  CANCELAR
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ABA 1: ÁUDIO & MICROFONE */}
+          {activeTab === 'audio' && !showDisconnectConfirm && (
+            <div className="settings-tab-pane">
+              <div className="settings-modal__header-group">
+                <span className="tactical-tag">NÓ DE HARDWARE</span>
+                <h2 className="settings-modal__section-title">CONFIGURAÇÕES DE ÁUDIO</h2>
+              </div>
 
               {devicesError && (
-                <div style={{ padding: '8px 12px', background: 'rgba(237, 66, 69, 0.15)', border: '1px solid rgba(237, 66, 69, 0.3)', borderRadius: '2px', color: '#ed4245', fontSize: '0.8125rem', marginBottom: '16px' }}>
+                <div className="settings-alert settings-alert--error">
                   [ALERTA DE HARDWARE] {devicesError}
                 </div>
               )}
 
-              {/* Input Device (Mic) */}
+              {/* Entrada de Áudio (Mic) */}
               <div className="settings-field">
                 <label className="settings-field__label" htmlFor="settings-mic">
-                  Entrada de Áudio
+                  DISPOSITIVO DE ENTRADA (MICROFONE)
                 </label>
                 <select
                   id="settings-mic"
-                  className="settings-field__select"
+                  className="settings-field__select chamfer-sm"
                   value={selectedMic}
                   onChange={(e) => setSelectedMic(e.target.value)}
                 >
@@ -238,13 +324,16 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
                   ))}
                 </select>
                 <p className="settings-field__description">
-                  Selecione o microfone que será usado para comunicação por voz.
+                  Selecione o microfone utilizado nas frequências de voz do Shelter.
                 </p>
               </div>
 
-              {/* Input Volume */}
+              {/* Volume de Entrada */}
               <div className="settings-field">
-                <label className="settings-field__label">Volume de Entrada</label>
+                <div className="settings-field__label-row">
+                  <label className="settings-field__label">SENSIBILIDADE DE ENTRADA</label>
+                  <span className="settings-field__value-badge">{inputVolume}%</span>
+                </div>
                 <div className="settings-field__slider-wrapper">
                   <input
                     type="range"
@@ -254,20 +343,19 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
                     value={inputVolume}
                     onChange={(e) => setInputVolume(Number(e.target.value))}
                   />
-                  <span className="settings-field__slider-value">{inputVolume}%</span>
                 </div>
               </div>
 
               <div className="settings-divider" />
 
-              {/* Output Device (Speaker) */}
+              {/* Saída de Áudio (Speakers/Headset) */}
               <div className="settings-field">
                 <label className="settings-field__label" htmlFor="settings-speaker">
-                  Saída de Áudio
+                  DISPOSITIVO DE SAÍDA (FONES / ALTO-FALANTES)
                 </label>
                 <select
                   id="settings-speaker"
-                  className="settings-field__select"
+                  className="settings-field__select chamfer-sm"
                   value={selectedSpeaker}
                   onChange={(e) => setSelectedSpeaker(e.target.value)}
                 >
@@ -279,13 +367,16 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
                   ))}
                 </select>
                 <p className="settings-field__description">
-                  Escolha por onde o áudio dos seus amigos será reproduzido (headset, caixa de som, etc).
+                  Dispositivo onde o áudio dos outros operadores será reproduzido.
                 </p>
               </div>
 
-              {/* Output Volume */}
+              {/* Volume de Saída */}
               <div className="settings-field">
-                <label className="settings-field__label">Volume de Saída</label>
+                <div className="settings-field__label-row">
+                  <label className="settings-field__label">VOLUME PRINCIPAL DE SAÍDA</label>
+                  <span className="settings-field__value-badge">{outputVolume}%</span>
+                </div>
                 <div className="settings-field__slider-wrapper">
                   <input
                     type="range"
@@ -295,24 +386,31 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
                     value={outputVolume}
                     onChange={(e) => setOutputVolume(Number(e.target.value))}
                   />
-                  <span className="settings-field__slider-value">{outputVolume}%</span>
                 </div>
               </div>
+            </div>
+          )}
 
-              <div className="settings-divider" />
+          {/* ABA 2: VÍDEO & CÂMERA */}
+          {activeTab === 'video' && !showDisconnectConfirm && (
+            <div className="settings-tab-pane">
+              <div className="settings-modal__header-group">
+                <span className="tactical-tag">ÓPTICA &amp; VÍDEO</span>
+                <h2 className="settings-modal__section-title">CONFIGURAÇÃO DE CÂMERA</h2>
+              </div>
 
-              {/* Camera */}
+              {/* Seletor de Câmera */}
               <div className="settings-field">
                 <label className="settings-field__label" htmlFor="settings-camera">
-                  Câmera
+                  DISPOSITIVO DE CAPTURA DE VÍDEO
                 </label>
                 <select
                   id="settings-camera"
-                  className="settings-field__select"
+                  className="settings-field__select chamfer-sm"
                   value={selectedCamera}
                   onChange={(e) => setSelectedCamera(e.target.value)}
                 >
-                  <option value="">Nenhuma</option>
+                  <option value="">Nenhuma / Desativada</option>
                   {cameras.map((cam) => (
                     <option key={cam.deviceId} value={cam.deviceId}>
                       {cam.label}
@@ -322,53 +420,71 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
               </div>
 
               {/* Camera Preview */}
-              <div className="settings-camera-preview">
-                {cameraStream ? (
-                  <video ref={videoPreviewRef} autoPlay playsInline muted />
-                ) : (
-                  <div className="settings-camera-preview__placeholder">
-                    <span className="settings-camera-preview__placeholder-icon">📷</span>
-                    <span>
-                      {selectedCamera ? 'Carregando preview...' : 'Selecione uma câmera para preview'}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="settings-divider" />
-
-              {/* Screen Share */}
               <div className="settings-field">
-                <label className="settings-field__label">
-                  Compartilhamento de Tela
-                </label>
-                <p className="settings-field__description" style={{ marginTop: 0, marginBottom: 8 }}>
-                  Compartilhe sua tela inteira ou a janela de um jogo específico.
-                </p>
-                <button className="settings-share-btn" onClick={handleShareScreen}>
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" />
-                  </svg>
-                  Compartilhar Tela
-                </button>
+                <label className="settings-field__label">MONITORAMENTO DE VÍDEO EM TEMPO REAL</label>
+                <div className="settings-camera-preview chamfer-sm">
+                  {cameraStream ? (
+                    <video ref={videoPreviewRef} autoPlay playsInline muted />
+                  ) : (
+                    <div className="settings-camera-preview__placeholder">
+                      <span className="settings-camera-preview__placeholder-icon">&#128247;</span>
+                      <span>
+                        {selectedCamera ? 'Inicializando sensor óptico...' : 'Selecione uma câmera para monitorar'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </>
+            </div>
           )}
 
-          {activeTab === 'about' && (
-            <>
-              <h2 className="settings-modal__section-title">Sobre o Shelter</h2>
+          {/* ABA 3: TRANSMISSÃO DE TELA */}
+          {activeTab === 'stream' && !showDisconnectConfirm && (
+            <div className="settings-tab-pane">
+              <div className="settings-modal__header-group">
+                <span className="tactical-tag">BROADCAST SFU</span>
+                <h2 className="settings-modal__section-title">TRANSMISSÃO DE TELA</h2>
+              </div>
 
-              <div className="settings-about">
+              <div className="settings-field">
+                <p className="settings-field__description" style={{ fontSize: '0.9375rem', marginBottom: 16 }}>
+                  Transmita a tela cheia ou janelas de jogos com baixa latência via SFU dedicado. Suporta resolução até <strong>1080p a 60 FPS</strong> com múltiplos operadores assistindo simultaneamente.
+                </p>
+
+                <button
+                  type="button"
+                  className="settings-action-btn chamfer-sm"
+                  onClick={handleShareScreen}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                    <line x1="8" y1="21" x2="16" y2="21" />
+                    <line x1="12" y1="17" x2="12" y2="21" />
+                  </svg>
+                  INICIAR COMPARTILHAMENTO DE TELA
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ABA 4: SOBRE O SHELTER */}
+          {activeTab === 'about' && !showDisconnectConfirm && (
+            <div className="settings-tab-pane">
+              <div className="settings-modal__header-group">
+                <span className="tactical-tag">INFORMAÇÕES DO SISTEMA</span>
+                <h2 className="settings-modal__section-title">SOBRE O SHELTER</h2>
+              </div>
+
+              <div className="settings-about chamfer-sm">
                 <img className="settings-about__logo" src="/shelter-logo.png" alt="Shelter" />
                 <div className="settings-about__info">
-                  <div className="settings-about__name">Shelter</div>
+                  <div className="settings-about__name">SHELTER</div>
                   <div className="version-badge">
-                    Versão {APP_VERSION_BASE}
+                    VERSÃO {APP_VERSION_BASE}
                     {APP_CHANNEL && <span className="version-badge__tag">{APP_CHANNEL}</span>}
                   </div>
                   <p className="settings-field__description">
-                    Voz, vídeo e transmissão de tela com baixa latência, no seu próprio servidor.
+                    Estação de comunicação tática de voz, vídeo e broadcast com criptografia e SFU de alta performance para servidores privados.
                   </p>
                 </div>
               </div>
@@ -376,30 +492,34 @@ export default function SettingsModal({ isOpen, onClose, onStartStream, onCheckU
               <div className="settings-divider" />
 
               <div className="settings-field">
-                <label className="settings-field__label">Atualizações</label>
-                <p className="settings-field__description" style={{ marginTop: 0, marginBottom: 8 }}>
-                  O Shelter verifica automaticamente no GitHub se há uma versão nova sempre que você conecta ao servidor.
+                <label className="settings-field__label">VERIFICAÇÃO DE ATUALIZAÇÕES</label>
+                <p className="settings-field__description" style={{ marginBottom: 12 }}>
+                  O Shelter consulta automaticamente os releases no repositório do GitHub ao iniciar. Você também pode verificar manualmente abaixo.
                 </p>
                 <button
                   id="settings-check-update"
-                  className="settings-share-btn"
+                  type="button"
+                  className="settings-action-btn settings-action-btn--secondary chamfer-sm"
                   onClick={handleCheckUpdate}
                   disabled={updateStatus === 'checking'}
                 >
-                  {updateStatus === 'checking' ? 'Verificando...' : 'Verificar atualizações'}
+                  {updateStatus === 'checking' ? 'VERIFICANDO NO GITHUB...' : 'VERIFICAR ATUALIZAÇÕES AGORA'}
                 </button>
+
                 {updateStatus === 'latest' && (
                   <p className="settings-about__status settings-about__status--ok">
-                    ✓ Você já está na versão mais recente.
+                    ✓ Sistema operacional na versão mais recente.
                   </p>
                 )}
                 {updateStatus === 'found' && (
-                  <p className="settings-about__status">Nova versão encontrada!</p>
+                  <p className="settings-about__status settings-about__status--alert">
+                    ! Nova atualização encontrada no GitHub!
+                  </p>
                 )}
               </div>
-            </>
+            </div>
           )}
-        </div>
+        </main>
       </div>
     </div>
   );

@@ -200,6 +200,12 @@ function App() {
     liveKit.stopScreenShare();
   }, [liveKit]);
 
+  const handleDisconnectServer = useCallback(() => {
+    liveKit.disconnect();
+    setSettingsOpen(false);
+    setScreen('login');
+  }, [liveKit]);
+
   return (
     <>
       {screen === 'login' && <LoginScreen onConnect={handleConnect} />}
@@ -240,6 +246,7 @@ function App() {
         onClose={() => setSettingsOpen(false)}
         onStartStream={handleStartStream}
         onCheckUpdate={handleManualUpdateCheck}
+        onDisconnect={handleDisconnectServer}
       />
 
       <UpdateModal
